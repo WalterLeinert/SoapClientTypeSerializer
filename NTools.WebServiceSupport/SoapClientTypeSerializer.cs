@@ -25,7 +25,7 @@ namespace NTools.WebServiceSupport {
 		/// <summary>
 		/// Die Fileextension für die serialisierten SoapClientTypes.
 		/// </summary>
-		public const string SerializerExtension = ".SoapClientType";
+		public const string SerializerExtension = "SoapClientType";
 
 		public static FieldReflector s_clientTypeReflector = new FieldReflector(typeof(SoapHttpClientProtocol), "clientType", MemberReflector.PrivateInstanceDeclared);
 		public static TypeReflector s_webClientProtocolReflector = new TypeReflector(typeof(WebClientProtocol));
