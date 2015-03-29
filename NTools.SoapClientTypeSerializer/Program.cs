@@ -1,14 +1,12 @@
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-
-using NTools.WebServiceSupport;
 
 namespace NTools.WebServiceSupport.Tools {
 
 	class Program {
-		private static ArrayList s_constructorTypes = new ArrayList();
+		private static readonly List<Type> s_constructorTypes = new List<Type>();
 		private static string s_modelDirectory;
 
 		/// <summary>
@@ -41,49 +39,51 @@ namespace NTools.WebServiceSupport.Tools {
 			}
 #endif
 
-			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
+			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
 
-			Assembly assembly = Assembly.LoadFrom(args[0]);
+			var assembly = Assembly.LoadFrom(args[0]);
 
 			s_modelDirectory = Path.GetDirectoryName(assembly.Location);
 
-			string serializerFileName = assembly.Location;
+			var serializerFileName = assembly.Location;
 			serializerFileName = Path.ChangeExtension(serializerFileName, ".XmlSerializers.dll");
 
 			if (File.Exists(serializerFileName)) {
-				Assembly serializerAssembly = Assembly.LoadFrom(serializerFileName);
-			}			
+				var serializerAssembly = Assembly.LoadFrom(serializerFileName);
+			}
 
-			ArrayList types = new ArrayList();
-			string[] constructorTypes = args[1].Split(new char[] {';'});
 
-			foreach (string constructorType in constructorTypes) {
-				string[] typeParts = constructorType.Split(new char[] {','});
+			if (args.Length > 1) {
+				var constructorTypes = args[1].Split(new char[] {';'});
 
-				Type type;
-				if (typeParts.Length > 1) {
-					string asmName = typeParts[1].Trim();
-					string asmPath = Path.Combine(s_modelDirectory, asmName);
-					asmPath = Path.ChangeExtension(asmPath, ".dll");
+				foreach (var constructorType in constructorTypes) {
+					var typeParts = constructorType.Split(new char[] {','});
 
-					//Assembly asm = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(assembly.Location), "ObjectManagement.dll"));
-					Assembly asm = Assembly.LoadFrom(asmPath);
-					type = asm.GetType(typeParts[0]);
-				} else {
-					type = Type.GetType(constructorType);
-				}
+					Type type;
+					if (typeParts.Length > 1) {
+						var asmName = typeParts[1].Trim();
+						var asmPath = Path.Combine(s_modelDirectory, asmName);
+						asmPath = Path.ChangeExtension(asmPath, ".dll");
 
-				if (type != null) {
-					s_constructorTypes.Add(type);					
+						//Assembly asm = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(assembly.Location), "ObjectManagement.dll"));
+						var asm = Assembly.LoadFrom(asmPath);
+						type = asm.GetType(typeParts[0]);
+					} else {
+						type = Type.GetType(constructorType);
+					}
+
+					if (type != null) {
+						s_constructorTypes.Add(type);
+					}
 				}
 			}
 
-			string currentDirectory = Environment.CurrentDirectory;
+			var currentDirectory = Environment.CurrentDirectory;
 
 			try {
 				Environment.CurrentDirectory = Path.GetDirectoryName(assembly.Location);
 #if !NET_1
-				SoapClientTypeSerializer.Constructing += new EventHandler<ConstructorEventArgs>(SoapClientTypeSerializer_Constructing);
+				SoapClientTypeSerializer.Constructing += new EventHandler<ConstructorEventArgs>(SoapClientTypeSerializerConstructing);
 #else
 				SoapClientTypeSerializer.Constructing += new ConstructorEventHandler(SoapClientTypeSerializer_Constructing);
 #endif
@@ -93,26 +93,35 @@ namespace NTools.WebServiceSupport.Tools {
 			}
 		}
 
-		static void SoapClientTypeSerializer_Constructing(object sender, ConstructorEventArgs e) {
+		static void SoapClientTypeSerializerConstructing(object sender, ConstructorEventArgs e) {
 			//if (e.Type == typeof(object)) {
 			e.Args = new object[] { null };
 			if (s_constructorTypes.Count > 0) {
-				e.Types = (Type[])s_constructorTypes.ToArray(typeof(Type));
+				e.Types = s_constructorTypes.ToArray();
 			}
 			//}
 		}
 
-		private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+		private static Assembly CurrentDomainAssemblyResolve(object sender, ResolveEventArgs args) {
 			Assembly assembly = null;
 
-			string[] parts = args.Name.Split(new char[] {','});
-			string assemblyPath = Path.ChangeExtension(Path.Combine(s_modelDirectory, parts[0]), ".dll");
+			var parts = args.Name.Split(',');
+			var assemblyPath = Path.ChangeExtension(Path.Combine(s_modelDirectory, parts[0]), ".dll");
 
 			if (File.Exists(assemblyPath)) {
 				assembly = Assembly.LoadFrom(assemblyPath);
 			}
 			return assembly;
 		}
+
 	}
 
+
+	internal class Tester {
+
+		private static void Main(string[] args) {
+			var assembly = Assembly.LoadFrom(args[0]);
+			SoapClientTypeSerializer.DeserializeClientTypes(assembly);
+		}
+	}
 }
