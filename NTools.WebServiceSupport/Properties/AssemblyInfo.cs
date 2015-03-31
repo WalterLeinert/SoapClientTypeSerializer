@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Allgemeine Informationen über eine Assembly werden über die folgenden 
 // Attribute gesteuert. Ändern Sie diese Attributwerte, um die Informationen zu ändern,
 // die mit einer Assembly verknüpft sind.
-[assembly: AssemblyTitle("WebServiceSupport")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("NTools.WebServiceSupport")]
+[assembly: AssemblyDescription("NTools Webservice Support")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("privat")]
+[assembly: AssemblyCompany("Walter Leinert")]
 [assembly: AssemblyProduct("WebServiceSupport")]
-[assembly: AssemblyCopyright("Copyright © privat 2007")]
+[assembly: AssemblyCopyright("Copyright © Walter Leinert 2007-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
