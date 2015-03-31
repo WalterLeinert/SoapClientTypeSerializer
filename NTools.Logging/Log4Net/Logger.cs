@@ -1,7 +1,5 @@
 using System;
-#if !NET_1
 using System.Collections.Generic;
-#endif
 using System.Reflection;
 using System.Text;
 

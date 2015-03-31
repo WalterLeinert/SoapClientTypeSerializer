@@ -1,9 +1,7 @@
 namespace NTools.WebServiceSupport {
 
 	/// <remarks/>
-#if !NET_1
 	[System.CodeDom.Compiler.GeneratedCodeAttribute("wsdl", "2.0.50727.42")]
-#endif
 	[System.Diagnostics.DebuggerStepThroughAttribute()]
 	[System.ComponentModel.DesignerCategoryAttribute("code")]
 	[System.Web.Services.WebServiceBindingAttribute(Name = "DummyInfoWebService", Namespace = "http://www.themindelectric.com/wsdl/DummyInfoWebService/")]

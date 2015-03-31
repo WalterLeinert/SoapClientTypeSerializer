@@ -82,11 +82,7 @@ namespace NTools.WebServiceSupport.Tools {
 
 			try {
 				Environment.CurrentDirectory = Path.GetDirectoryName(assembly.Location);
-#if !NET_1
 				SoapClientTypeSerializer.Constructing += new EventHandler<ConstructorEventArgs>(SoapClientTypeSerializerConstructing);
-#else
-				SoapClientTypeSerializer.Constructing += new ConstructorEventHandler(SoapClientTypeSerializer_Constructing);
-#endif
 				SoapClientTypeSerializer.SerializeClientTypes(assembly);
 			} finally {
 				Environment.CurrentDirectory = currentDirectory;

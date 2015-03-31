@@ -1,17 +1,7 @@
-using System;
-using System.Collections;
-#if !NET_1
 using System.Collections.Generic;
-#endif
-using System.Text;
 
 namespace NTools.Logging.Log4Net {
-
-#if !NET_1
-		using Queue = Queue<LoggingEventWrapper>;
-#else
-	using Queue = ArrayList;
-#endif
+	using Queue = Queue<LoggingEventWrapper>;
 
 	public class LoggingEventQueue : Queue {
 		private static volatile int[] s_locker = new int[0];
@@ -31,11 +21,7 @@ namespace NTools.Logging.Log4Net {
 
 		public void Enqueue(ITraceLog traceLog, LoggingEventWrapper loggingEvent) {
 			lock (s_locker) {
-#if !NET_1
 				base.Enqueue(loggingEvent);
-#else
-				base.Add(loggingEvent);
-#endif
 				if (Count >= m_flushThreshold) {
 					Flush(traceLog);
 				}
@@ -46,12 +32,7 @@ namespace NTools.Logging.Log4Net {
 		public void Flush(ITraceLog traceLog) {
 			LoggingEventWrapper[] loggingEvents = null;
 			lock (s_locker) {
-#if !NET_1
 				loggingEvents = ToArray();
-#else
-				loggingEvents = new LoggingEventWrapper[Count];
-				CopyTo(loggingEvents);
-#endif
 				Clear();
 			}
 

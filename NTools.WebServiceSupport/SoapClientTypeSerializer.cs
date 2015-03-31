@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-#if !NET_1
 using System.Collections.Generic;
-#endif
 using System.Web.Services.Protocols;
 using System.Reflection;
 using System.IO;
@@ -13,11 +11,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using NTools.Core.Reflection;
 
 namespace NTools.WebServiceSupport {
-#if !NET_1
     using TypeList      = List<Type>;
-#else
-    using TypeList      = ArrayList;
-#endif
 
 
 	public sealed class SoapClientTypeSerializer {
@@ -169,11 +163,7 @@ namespace NTools.WebServiceSupport {
 			return (cachedClientType != null);
 		}
 
-#if !NET_1
 		public static event EventHandler<ConstructorEventArgs> Constructing;
-#else
-		public static event ConstructorEventHandler Constructing;
-#endif
 	}
 
 	public delegate void ConstructorEventHandler(object sender, ConstructorEventArgs e);

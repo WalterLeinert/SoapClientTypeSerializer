@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
-#if !NET_1
 using System.Collections.Generic;
-#endif
 using System.IO;
 using System.Web.Services.Protocols;
 using System.Reflection;
@@ -12,52 +10,16 @@ using NTools.Core.Reflection;
 
 namespace NTools.WebServiceSupport {
 
-#if !NET_1
-
     //- Logging Namespaces ---------------------------------------------------
 
     using log4net.Core;
-    using NTools.Logging.Log4Net;
+    using Logging.Log4Net;
 
     using TypeSerializerDictByType      = Dictionary<Type, TypeSerializer>;
     using TypeSerializerDictByObject    = Dictionary<object, TypeSerializer>;
     using FieldSerializerDict           = Dictionary<string, FieldSerializer>;
     using ConstructorReflectorDict      = Dictionary<string, ConstructorReflector>;
-#else
-    using TypeSerializerDictByType      = Hashtable;
-    using TypeSerializerDictByObject    = Hashtable;
-    using FieldSerializerDict           = Hashtable;
-    using ConstructorReflectorDict      = Hashtable;
 
-	interface ITraceLog {
-	}
-
-	[Serializable]
-	sealed class TraceLogManager {
-		public static ITraceLog GetLogger(Type type) {
-			return null;
-		}
-	}
-
-	[Serializable]
-	public class EnterExitLogger : IDisposable {
-		public EnterExitLogger(params object[] args) {
-		}
-		#region IDisposable Member
-
-		public void Dispose() {
-			// TODO:  Implementierung von EnterExitLogger.Dispose hinzufügen
-		}
-
-		#endregion
-	}
-
-	[Serializable]
-	enum Level {
-		Info
-	}
-
-	#endif
 
 	/// <summary>
 	/// Klasse für die Serialisierung von Objekten, die eigentlich nicht serialisierbar sind. 

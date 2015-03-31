@@ -1,23 +1,12 @@
 using System;
-using System.Collections;
-#if !NET_1
 using System.Collections.Generic;
-#endif
-using System.Text;
 using System.Reflection;
+using System.Text;
 
-
-namespace NTools.Core.Reflection {
-    
-#if !NET_1
+namespace NTools.Core.Reflection {    
     using FieldDict     = Dictionary<string, FieldReflector>;
     using MethodDict    = Dictionary<string, MethodReflector>;
     using TypeList      = List<Type>;
-#else
-    using FieldDict     = Hashtable;
-    using MethodDict    = Hashtable;
-    using TypeList      = ArrayList;
-#endif
 
     public class TypeReflector {		
 		private readonly Type m_type;
@@ -55,11 +44,8 @@ namespace NTools.Core.Reflection {
 			foreach (ParameterInfo pi in methodBase.GetParameters()) {
 				parameterTypes.Add(pi.ParameterType);
 			}
-#if !NET_1
+
 		    Type[] types = parameterTypes.ToArray(); 
-#else
-            Type[] types = (Type[]) parameterTypes.ToArray(typeof(Type));
-#endif
             return BuildMethodSignature(methodBase.Name, types);
 		}
 

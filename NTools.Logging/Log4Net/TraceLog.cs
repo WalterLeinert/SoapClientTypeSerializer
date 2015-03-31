@@ -342,17 +342,14 @@ namespace NTools.Logging.Log4Net {
             m_levelFatal = levelMap.LookupWithDefault(Level.Fatal);
 	
 			foreach (Level level in SupportedLevels) {
-				if (Logger.IsEnabledFor(level)) {
-#if !NET_1	
+				if (Logger.IsEnabledFor(level)) {	
 					m_levelEnabledMin = Min<Level>(m_levelEnabledMin, level);
-#endif
 				}
 			}
 
             OnLevelsReloaded(new LevelsReloadedEventArgs(levelMap));
         }
-
-#if !NET_1		
+		
 		public static T Min<T>(T v1, T v2) where T : IComparable  {
 			int res = v1.CompareTo(v2);
 			if (res < 0) {
@@ -361,7 +358,6 @@ namespace NTools.Logging.Log4Net {
 				return v2;
 			}
 		}
-#endif
 
 
 		public event LevelsReloadedEventHandler LevelsReloaded;
