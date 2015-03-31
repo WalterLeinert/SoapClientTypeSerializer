@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 
 namespace NTools.Core.DynamicCode {
     public delegate object MethodDelegate(object instance, params object[] args);
 
     public  class MethodProxy : MemberProxy {
-        private DynamicMethod m_method;
+        private readonly DynamicMethod m_method;
         private MethodDelegate m_methodDelegate;
 
         public MethodProxy(MethodInfo methodInfo) : base(methodInfo) {
@@ -17,16 +16,15 @@ namespace NTools.Core.DynamicCode {
         }
 
         private static DynamicMethod CreateMethodInvoker(MethodInfo methodInfo, Type owner) {
-            List<Type> parameterTypes = new List<Type>( );
-            parameterTypes.Add(methodInfo.DeclaringType);
-            ParameterInfo [] parameterInfos = methodInfo.GetParameters( );
+	        var parameterTypes = new List<Type> {methodInfo.DeclaringType};
+	        var parameterInfos = methodInfo.GetParameters( );
 
-            foreach (ParameterInfo pi in parameterInfos) {
+            foreach (var pi in parameterInfos) {
                 parameterTypes.Add(pi.ParameterType);
                 //parameterTypes.Add(typeof(object));
             }
 
-            DynamicMethod method = new DynamicMethod(methodInfo.Name + "___generatedInvoker",
+            var method = new DynamicMethod(methodInfo.Name + "___generatedInvoker",
                 //MethodAttributes.Public,
                 //CallingConventions.VarArgs,
                 methodInfo.ReturnType,
@@ -35,10 +33,10 @@ namespace NTools.Core.DynamicCode {
                 false                
                 );
 
-            ILGenerator generator = method.GetILGenerator( );
+            var generator = method.GetILGenerator( );
             generator.Emit(OpCodes.Ldarg_0);
 
-            for (int i = 0 ; i < parameterInfos.Length ; i++) {
+            for (var i = 0 ; i < parameterInfos.Length ; i++) {
                 generator.Emit(OpCodes.Ldarg, i + 1);
             }
 
@@ -50,8 +48,8 @@ namespace NTools.Core.DynamicCode {
             //}
             generator.Emit(OpCodes.Ret);
 
-            for (int i = 0 ; i < parameterInfos.Length ; i++) {
-                ParameterBuilder pb = method.DefineParameter(
+            for (var i = 0 ; i < parameterInfos.Length ; i++) {
+                var pb = method.DefineParameter(
                     i + 1,
                     parameterInfos[i].Attributes,
                     parameterInfos[i].Name);

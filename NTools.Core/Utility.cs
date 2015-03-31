@@ -1,5 +1,3 @@
-using System;
-
 namespace NTools.Core {
 
 	/// <summary>

@@ -1,11 +1,10 @@
 //- Standard Namespaces --------------------------------------------------
+
 using System;
 using System.Runtime.InteropServices;
-
-//- Zusätzliche Namespaces -----------------------------------------------
 using log4net;
 using log4net.Core;
-
+//- Zusätzliche Namespaces -----------------------------------------------
 
 
 namespace NTools.Logging.Log4Net {
@@ -17,7 +16,7 @@ namespace NTools.Logging.Log4Net {
 	/// <remarks>
 	/// <para>
 	/// Mit Hilfe des <see cref="TraceLogManager"/> erhält man Instanzen von Objekten,
-	/// die das Interface implementieren. Die statische Methode <see cref="TraceLogManager.GetLogger"/>
+	/// die das Interface implementieren. Die statische Methode <see cref="TraceLogManager.GetLogger(string)"/>
 	/// liefert Logger-Instanzen.
 	/// </para>
 	/// <para>
@@ -39,7 +38,7 @@ namespace NTools.Logging.Log4Net {
 	/// </code>
 	/// </example>
 	/// <seealso cref="TraceLogManager"/>
-	/// <seealso cref="TraceLogManager.GetLogger"/>
+	/// <seealso cref="TraceLogManager.GetLogger(string)"/>
 	[ComVisible(false)]
 	public interface ITraceLog : ILog {
 	
@@ -161,7 +160,7 @@ namespace NTools.Logging.Log4Net {
 		#region Trace Methoden
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.TRACE"/> Level.
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Trace"/> Level.
 		/// </summary>
 		/// <remarks>
 		/// Siehe auch <see cref="ILog.Debug(object)"/> für weitere Erläuterungen.
@@ -173,7 +172,7 @@ namespace NTools.Logging.Log4Net {
 		void Trace(string format, params object[] args) ;
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.TRACE"/> Level zusammen mit
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Trace"/> Level zusammen mit
 		/// dem Stacktrace der angegebenen <see cref="Exception"/> <paramref name="exc"/>.
 		/// </summary>
 		/// <remarks>
@@ -219,7 +218,7 @@ namespace NTools.Logging.Log4Net {
 		#region Warn Methoden
 	
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.WARN"/> Level.
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Warn"/> Level.
 		/// </summary>
 		/// <remarks>
 		/// Siehe auch <see cref="ILog.Debug(object)"/> für weitere Erläuterungen.
@@ -231,7 +230,7 @@ namespace NTools.Logging.Log4Net {
 		void Warn(string format, params object[] args) ;
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.WARN"/> Level zusammen mit
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Warn"/> Level zusammen mit
 		/// dem Stacktrace der angegebenen <see cref="Exception"/> <paramref name="exc"/>.
 		/// </summary>
 		/// <remarks>
@@ -248,7 +247,7 @@ namespace NTools.Logging.Log4Net {
 		#region Error Methoden
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.ERROR"/> Level.
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Error"/> Level.
 		/// </summary>
 		/// <remarks>
 		/// Siehe auch <see cref="ILog.Debug(object)"/> für weitere Erläuterungen.
@@ -260,7 +259,7 @@ namespace NTools.Logging.Log4Net {
 		void Error(string format, params object[] args);
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.ERROR"/> Level zusammen mit
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Error"/> Level zusammen mit
 		/// dem Stacktrace der angegebenen <see cref="Exception"/> <paramref name="exc"/>.
 		/// </summary>
 		/// <remarks>
@@ -277,7 +276,7 @@ namespace NTools.Logging.Log4Net {
 		#region Fatal Methoden
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.FATAL"/> Level.
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Fatal"/> Level.
 		/// </summary>
 		/// <remarks>
 		/// Siehe auch <see cref="ILog.Debug(object)"/> für weitere Erläuterungen.
@@ -289,7 +288,7 @@ namespace NTools.Logging.Log4Net {
 		void Fatal(string format, params object[] args);
 
 		/// <summary>
-		/// Schreibt einen Log-Eintrag für den <see cref="Level.FATAL"/> Level zusammen mit
+		/// Schreibt einen Log-Eintrag für den <see cref="Level.Fatal"/> Level zusammen mit
 		/// dem Stacktrace der angegebenen <see cref="Exception"/> <paramref name="exc"/>.
 		/// </summary>
 		/// <remarks>

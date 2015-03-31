@@ -36,7 +36,7 @@ namespace NTools.Core.Reflection {
 		}
 
 		private void SetupConstructorInfo() {
-			ParameterInfo[] parameters = Info.GetParameters();
+			var parameters = Info.GetParameters();
 			if (parameters == null || parameters.Length <= 0) {
 				m_isDefaultConstructor = true;
 			}

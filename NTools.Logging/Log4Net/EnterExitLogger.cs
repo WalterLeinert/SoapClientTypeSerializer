@@ -1,15 +1,14 @@
 //- Standard Namespaces --------------------------------------------------
+
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
-using System.Diagnostics;
-
-//- Zusätzliche Namespaces -----------------------------------------------
-using log4net.Repository;
 using log4net.Core;
+using log4net.Repository;
 using log4net.Util;
-
 using NTools.Core;
+//- Zusätzliche Namespaces -----------------------------------------------
 
 namespace NTools.Logging.Log4Net {
 
@@ -108,7 +107,7 @@ namespace NTools.Logging.Log4Net {
 		/// <summary>
 		/// Falls <c>true</c>, wird nicht m_method, sondern m_methodBase verwendet.
 		/// </summary>
-		private bool						m_useMethodbase;
+		private readonly bool						m_useMethodbase;
 
 		/// <summary>
 		/// Methodeninformation aus dem Stackframe
@@ -125,7 +124,7 @@ namespace NTools.Logging.Log4Net {
 		/// <summary>
 		/// der Log-Level
 		/// </summary>
-		private Level						m_level;
+		private readonly Level						m_level;
 
 		/// <summary>
 		/// der eigentliche Logger
@@ -177,14 +176,14 @@ namespace NTools.Logging.Log4Net {
 		private static readonly LoggingEventQueue s_loggingEventQueue = new LoggingEventQueue(10000, 1);
 
         static EnterExitLogger() {
-        	Assembly assembly = Assembly.GetEntryAssembly();
+        	var assembly = Assembly.GetEntryAssembly();
 			if (assembly == null) {
 				assembly = Assembly.GetExecutingAssembly();
 			}
-        	ILoggerRepository repository = LoggerManager.GetRepository(assembly);
+        	var repository = LoggerManager.GetRepository(assembly);
 			if (repository != null) {
-				repository.ConfigurationChanged += new LoggerRepositoryConfigurationChangedEventHandler(EnterExitLogger_ConfigurationChanged);
-				repository.ConfigurationReset += new LoggerRepositoryConfigurationResetEventHandler(EnterExitLogger_ConfigurationReset);
+				repository.ConfigurationChanged += EnterExitLogger_ConfigurationChanged;
+				repository.ConfigurationReset += EnterExitLogger_ConfigurationReset;
 			}
         }
 
@@ -330,7 +329,7 @@ namespace NTools.Logging.Log4Net {
 		/// <param name="args">variable Argumentliste</param>
 		/// <seealso cref="Dispose"/>
 		public EnterExitLogger(ITraceLog traceLog, string format, params object[] args) : 
-			this(2, traceLog, EnterExitLogger.DefaultLevel, format, args) {
+			this(2, traceLog, DefaultLevel, format, args) {
 		}
 
 
@@ -384,7 +383,7 @@ namespace NTools.Logging.Log4Net {
 		/// <param name="traceLog">zugehöriger Trace-Logger.</param>
 		/// <param name="message">weitere Information als <c>object</c>.</param>
 		/// <seealso cref="Dispose"/>
-		public EnterExitLogger(ITraceLog traceLog, object message) : this(4, traceLog, EnterExitLogger.DefaultLevel, message) {
+		public EnterExitLogger(ITraceLog traceLog, object message) : this(4, traceLog, DefaultLevel, message) {
 		}
 
 		/// <summary>
@@ -406,7 +405,7 @@ namespace NTools.Logging.Log4Net {
 		/// </summary>
 		/// <param name="traceLog">zugehöriger Trace-Logger</param>
 		/// <seealso cref="Dispose"/>
-		public EnterExitLogger(ITraceLog traceLog) : this(4, traceLog, EnterExitLogger.DefaultLevel, string.Empty) {
+		public EnterExitLogger(ITraceLog traceLog) : this(4, traceLog, DefaultLevel, string.Empty) {
 		}
 
 
@@ -1264,7 +1263,7 @@ namespace NTools.Logging.Log4Net {
 		/// Der aktuelle Logger
 		/// </summary>
 		/// <value>Liefert den aktuellen Logger</value>
-		public log4net.Core.ILogger Logger {
+		public ILogger Logger {
 			get { return m_traceLog.Logger; }
 		}
 
@@ -1353,7 +1352,7 @@ namespace NTools.Logging.Log4Net {
 				if (m_useMethodbase) {
 					BuildStackInfo(framesToSkip);
 				}
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method, elapsed,
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method, elapsed,
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level);
 				
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1377,7 +1376,7 @@ namespace NTools.Logging.Log4Net {
 				if (m_useMethodbase) {
 					BuildStackInfo(framesToSkip);
 				}
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method,
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method,
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level, message, exc);
 
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1399,7 +1398,7 @@ namespace NTools.Logging.Log4Net {
 				if (m_useMethodbase) {
 					BuildStackInfo(framesToSkip);
 				}
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method,
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method,
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level, message, null);
 
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1422,7 +1421,7 @@ namespace NTools.Logging.Log4Net {
 				if (m_useMethodbase) {
 					BuildStackInfo(framesToSkip);
 				}
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method, 
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method, 
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level, message, exc);
 
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1444,7 +1443,7 @@ namespace NTools.Logging.Log4Net {
 				if (m_useMethodbase) {
 					BuildStackInfo(framesToSkip);
 				}
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method, 
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method, 
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level, message, null);
 
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1467,7 +1466,7 @@ namespace NTools.Logging.Log4Net {
 				if (m_useMethodbase) {
 					BuildStackInfo(framesToSkip);
 				}
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method, 
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method, 
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level, null, format, args);
 
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1492,7 +1491,7 @@ namespace NTools.Logging.Log4Net {
 					BuildStackInfo(framesToSkip);
 				}
 
-				LoggingEventWrapper loggingEvent = new LoggingEventWrapper(enterExit, Method,
+				var loggingEvent = new LoggingEventWrapper(enterExit, Method,
 					CallerStackDeclaringType, LoggerRepository, LoggerName, level, exc, format, args);
 
 				s_loggingEventQueue.Enqueue(m_traceLog, loggingEvent);
@@ -1549,7 +1548,7 @@ namespace NTools.Logging.Log4Net {
 
         #region ILoggerWrapper Member
 
-        log4net.Core.ILogger ILoggerWrapper.Logger {
+        ILogger ILoggerWrapper.Logger {
             get { return Logger; }
         }
 
@@ -1718,7 +1717,7 @@ namespace NTools.Logging.Log4Net {
 				// wir holen einen Stacktrace ohne detaillierte Information (nur Methodeninformation)
 				// und ermitteln daraus den Namen der aufrufenden Methode
 				//
-				StackTrace st = new StackTrace(framesToSkip, false);
+				var st = new StackTrace(framesToSkip, false);
 				m_methodBase = st.GetFrame(0).GetMethod();
 				m_method = m_methodBase.Name;
 			}

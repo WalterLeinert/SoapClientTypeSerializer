@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -41,12 +40,12 @@ namespace NTools.Logging {
 				throw new Win32Exception();
 			}
 
-			s_frequencyDouble = (double) s_frequency;
+			s_frequencyDouble = s_frequency;
 
-			s_multiplierNanoFactor	= s_multiplierNano / (double)s_frequencyDouble;
-			s_multiplierTicksFactor = s_multiplierTicks / (double)s_frequencyDouble;
-			s_multiplierMicroFactor = s_multiplierMicro / (double)s_frequencyDouble;
-			s_multiplierMilliFactor = s_multiplierMilli / (double)s_frequencyDouble;
+			s_multiplierNanoFactor	= s_multiplierNano / s_frequencyDouble;
+			s_multiplierTicksFactor = s_multiplierTicks / s_frequencyDouble;
+			s_multiplierMicroFactor = s_multiplierMicro / s_frequencyDouble;
+			s_multiplierMilliFactor = s_multiplierMilli / s_frequencyDouble;
 		}
 
 
@@ -73,10 +72,10 @@ namespace NTools.Logging {
 			//    m_bestand = Bestand.Alle;
 			//}
 
-			this.m_start = (long)info.GetValue("m_start", typeof(long));
-			this.m_diff = (long)info.GetValue("m_diff", typeof(long));
-            this.m_stop = (long)info.GetValue("m_stop", typeof(long));
-            this.m_ticks = (long)info.GetValue("m_ticks", typeof(long));
+			m_start = (long)info.GetValue("m_start", typeof(long));
+			m_diff = (long)info.GetValue("m_diff", typeof(long));
+            m_stop = (long)info.GetValue("m_stop", typeof(long));
+            m_ticks = (long)info.GetValue("m_ticks", typeof(long));
 		}
 
 
@@ -179,8 +178,8 @@ namespace NTools.Logging {
 		
 			info.AddValue("m_start", m_start);
 			info.AddValue("m_stop", m_stop);
-			info.AddValue("m_diff", this.m_diff);
-			info.AddValue("m_ticks", this.m_ticks);
+			info.AddValue("m_diff", m_diff);
+			info.AddValue("m_ticks", m_ticks);
 		}
 
 	}

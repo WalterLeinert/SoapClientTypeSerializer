@@ -5,12 +5,11 @@ namespace NTools.Core.Reflection {
 
 	[Serializable]
 	public abstract class MethodBaseReflector : MemberReflector {
-
-		public MethodBaseReflector(Type type, string methodName, BindingFlags bindingFlags)
+		protected MethodBaseReflector(Type type, string methodName, BindingFlags bindingFlags)
 			: base(type, methodName, bindingFlags) {
 		}
 
-		public MethodBaseReflector(MethodBase methodBase)
+		protected MethodBaseReflector(MethodBase methodBase)
 			: base(methodBase) {
 		}
 

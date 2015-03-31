@@ -1,29 +1,29 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Collections.Generic;
 
 namespace NTools.Core.DynamicCode {
 
 
-	public delegate T PropertyGetDelegate<TClass, T>(TClass obj);
-	public delegate void PropertySetDelegate<TClass, T>(TClass obj, T value);
+	public delegate T PropertyGetDelegate<in TClass, out T>(TClass obj);
+	public delegate void PropertySetDelegate<in TClass, in T>(TClass obj, T value);
 
-	public delegate object PropertyGetDelegate<TClass>(TClass obj);
-	public delegate void PropertySetDelegate<TClass>(TClass obj, object value);
+	public delegate object PropertyGetDelegate<in TClass>(TClass obj);
+	public delegate void PropertySetDelegate<in TClass>(TClass obj, object value);
 
 	public delegate object PropertyGetDelegate(object obj);
 	public delegate void PropertySetDelegate(object obj, object value);
 
-	public delegate T MemberGetDelegate<T>(object obj);
+	public delegate T MemberGetDelegate<out T>(object obj);
 
 	
 
 	//
 	// Delegate Deklaration für die generischen Getter/Setter-Aufrufe
 	//
-	public delegate T PropertyGetter<T>(object obj);
-	public delegate void PropertySetter<T>(object obj, T value);
+	public delegate T PropertyGetter<out T>(object obj);
+	public delegate void PropertySetter<in T>(object obj, T value);
 
 	#region Delegates für Privitive
 	public delegate int IntGetterDelegate(object obj);
@@ -32,8 +32,8 @@ namespace NTools.Core.DynamicCode {
 
 
 	public class PropertyProxy : MemberProxy {
-		private PropertyGetDelegate m_propertyGetDelegate;
-		private PropertySetDelegate m_propertySetDelegate;
+		private readonly PropertyGetDelegate m_propertyGetDelegate;
+		private readonly PropertySetDelegate m_propertySetDelegate;
 
 		public PropertyProxy(Type type, string propertyName)
 			: this(type.GetProperty(propertyName)) {
@@ -42,18 +42,18 @@ namespace NTools.Core.DynamicCode {
 
 		public PropertyProxy(PropertyInfo info) : base(info) {
 
-			MethodInfo getter = Info.GetGetMethod();
+			var getter = Info.GetGetMethod();
 			if (getter != null) {
-				DynamicMethod getterMethod = CreateGetter(Info.DeclaringType, Info.PropertyType, Info.DeclaringType, getter);
+				var getterMethod = CreateGetter(Info.DeclaringType, Info.PropertyType, Info.DeclaringType, getter);
 				m_propertyGetDelegate = (PropertyGetDelegate) getterMethod.CreateDelegate(typeof(PropertyGetDelegate));
 
 				//m_propertySetDelegate = (PropertySetDelegate)
 				//    Delegate.CreateDelegate(typeof(PropertySetDelegate), miSetter);
 			}
 
-			MethodInfo setter = Info.GetSetMethod();
+			var setter = Info.GetSetMethod();
 			if (setter != null) {		
-				DynamicMethod setterMethod = CreateSetter(Info.DeclaringType, Info.PropertyType, Info.DeclaringType, setter);
+				var setterMethod = CreateSetter(Info.DeclaringType, Info.PropertyType, Info.DeclaringType, setter);
 				m_propertySetDelegate = (PropertySetDelegate) setterMethod.CreateDelegate(typeof(PropertySetDelegate));
 			}
 		}
@@ -103,13 +103,13 @@ namespace NTools.Core.DynamicCode {
 		/// <param name="getter">MethodInfo für Getter.</param>
 		/// <returns></returns>
 		protected DynamicMethod CreateGetter(Type classType, Type propertyType, Type owner, MethodInfo getter) {
-			DynamicMethod method = new DynamicMethod(Info.Name + "___generatedGetter",
+			var method = new DynamicMethod(Info.Name + "___generatedGetter",
 				typeof(object),
-				new Type[] { typeof(object) },
+				new[] { typeof(object) },
 				owner
 			);
 
-			ILGenerator generator = method.GetILGenerator();
+			var generator = method.GetILGenerator();
 			generator.DeclareLocal(typeof(object));
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Castclass, classType);
@@ -134,13 +134,13 @@ namespace NTools.Core.DynamicCode {
 		/// <param name="setter">MethodInfo für Setter.</param>
 		/// <returns></returns>
 		protected DynamicMethod CreateSetter(Type classType, Type propertyType, Type owner, MethodInfo setter) {
-			DynamicMethod method = new DynamicMethod(Info.Name + "___generatedSetter",
+			var method = new DynamicMethod(Info.Name + "___generatedSetter",
 				typeof(void),
-				new Type[] { typeof(object), typeof(object) },
+				new[] { typeof(object), typeof(object) },
 				owner
 			);
 
-			ILGenerator generator = method.GetILGenerator();
+			var generator = method.GetILGenerator();
 
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Castclass, classType);
@@ -172,14 +172,14 @@ namespace NTools.Core.DynamicCode {
 		private readonly DynamicMethod m_setterMethod;
 
 		private IntGetterDelegate m_propertyGetDelegate;
-		private PropertyGetDelegate<TClass, int> m_intGetterDelegate;
-		private PropertySetDelegate<TClass, int> m_intSetterDelegate;
+		private readonly PropertyGetDelegate<TClass, int> m_intGetterDelegate;
+		private readonly PropertySetDelegate<TClass, int> m_intSetterDelegate;
 
-		private static Dictionary<Type, DelegateHelper> s_primitiveDelegateTypes;
+		private static readonly Dictionary<Type, DelegateHelper> s_primitiveDelegateTypes;
 
 
-		public delegate T PropertyGetDelegate<TCl, T>(TCl obj);
-		public delegate void PropertySetDelegate<TCl, T>(TCl obj, T value);
+		public delegate T PropertyGetDelegate<in TCl, out T>(TCl obj);
+		public delegate void PropertySetDelegate<in TCl, in T>(TCl obj, T value);
 	
 		public delegate int IntPropertyGetDelegate(TClass obj);
 
@@ -200,7 +200,7 @@ namespace NTools.Core.DynamicCode {
 		public PropertyProxy(PropertyInfo info)
 			: base(info) {
 
-			MethodInfo miGetter = info.GetGetMethod();
+			var miGetter = info.GetGetMethod();
 			if (miGetter != null) {
 				// NOTE:  As reader J. Dunlap pointed out...
 				//  Calling a property's get accessor is faster/cleaner using
@@ -212,7 +212,7 @@ namespace NTools.Core.DynamicCode {
 					Delegate.CreateDelegate(typeof(PropertyGetDelegate<TClass, int>), miGetter);
 			}
 
-			MethodInfo miSetter = info.GetSetMethod();
+			var miSetter = info.GetSetMethod();
 			if (miSetter != null) {
 				m_intSetterDelegate = (PropertySetDelegate<TClass, int>)
 					Delegate.CreateDelegate(typeof(PropertySetDelegate<TClass, int>), miSetter);
@@ -230,8 +230,8 @@ namespace NTools.Core.DynamicCode {
 				}
 
 			} else {
-				DynamicMethod m_getterMethod = CreateGetMethod();
-				DynamicMethod m_setterMethod = CreateSetMethod();
+				var m_getterMethod = CreateGetMethod();
+				var m_setterMethod = CreateSetMethod();
 
 				m_getterDelegate = (PropertyGetDelegate)m_getterMethod.CreateDelegate(typeof(PropertyGetDelegate));
 				m_setterDelegate = (PropertySetDelegate)m_setterMethod.CreateDelegate(typeof(PropertySetDelegate));
@@ -297,19 +297,19 @@ namespace NTools.Core.DynamicCode {
 		/// <returns>Eine <see cref="DynamicMethod"/>.</returns>
 		protected DynamicMethod CreateGetMethod() {
 		
-			MethodInfo getMethod = Info.GetGetMethod();
+			var getMethod = Info.GetGetMethod();
 			if (getMethod == null) {
 				return null;				
 			}
 
-			DynamicMethod getter = new DynamicMethod(
+			var getter = new DynamicMethod(
 				Info.Name + "___generatedGetter",
 				typeof(object), 
-				new Type[] { typeof(object) }, 
+				new[] { typeof(object) }, 
 				Info.DeclaringType
 				);
 
-			ILGenerator generator = getter.GetILGenerator();
+			var generator = getter.GetILGenerator();
 			generator.DeclareLocal(typeof(object));
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Castclass, Info.DeclaringType);
@@ -329,27 +329,28 @@ namespace NTools.Core.DynamicCode {
 		/// </summary>
 		/// <returns>Eine <see cref="DynamicMethod"/>.</returns>
 		protected DynamicMethod CreateSetMethod() {
-			MethodInfo setMethod = Info.GetSetMethod();
+			var setMethod = Info.GetSetMethod();
 			if (setMethod == null) {
 				return null;
 			}
 	
-			DynamicMethod setter = new DynamicMethod(
+			var setter = new DynamicMethod(
 				Info.Name + "___generatedSetter",
 				typeof(void),
-				new Type[] { typeof(object), typeof(object) },
+				new[] { typeof(object), typeof(object) },
 				Info.DeclaringType
 			);
 		
-			ILGenerator generator = setter.GetILGenerator();
+			var generator = setter.GetILGenerator();
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Castclass, Info.DeclaringType);
 			generator.Emit(OpCodes.Ldarg_1);
 
-			if (Info.PropertyType.IsClass)
+			if (Info.PropertyType.IsClass) {
 				generator.Emit(OpCodes.Castclass, Info.PropertyType);
-			else
+			} else {
 				generator.Emit(OpCodes.Unbox_Any, Info.PropertyType);
+			}
 
 			generator.EmitCall(OpCodes.Callvirt, setMethod, null);
 			generator.Emit(OpCodes.Ret);
@@ -450,18 +451,18 @@ namespace NTools.Core.DynamicCode {
 		/// <param name="owner">The owner.</param>
 		/// <returns></returns>
 		protected DynamicMethod CreatePrimitiveGetter(Type classType, Type propertyType, Type owner) {
-			MethodInfo getter = Info.GetGetMethod();
+			var getter = Info.GetGetMethod();
 			if (getter == null) {
 				return null;
 			}
 
-			DynamicMethod method = new DynamicMethod(Info.Name + "___generatedGetter",
+			var method = new DynamicMethod(Info.Name + "___generatedGetter",
 				propertyType,
-				new Type[] { typeof(object) },
+				new[] { typeof(object) },
 				owner
 			);
 
-			ILGenerator generator = method.GetILGenerator();
+			var generator = method.GetILGenerator();
 
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Castclass, classType);
@@ -482,18 +483,18 @@ namespace NTools.Core.DynamicCode {
 		/// <param name="owner">Der Typ, in dem die <see cref="DynamicMethod"/> generiert wird.</param>
 		/// <returns>Eine <see cref="DynamicMethod"/>.</returns>
 		protected DynamicMethod CreatePrimitiveSetter(Type classType, Type primitiveType, Type owner) {
-			MethodInfo setter = Info.GetGetMethod();
+			var setter = Info.GetGetMethod();
 			if (setter == null) {
 				return null;
 			}
 
-			DynamicMethod method = new DynamicMethod(Info.Name + "___generatedSetter",
+			var method = new DynamicMethod(Info.Name + "___generatedSetter",
 				typeof(void),
-				new Type[] { typeof(object), primitiveType },
+				new[] { typeof(object), primitiveType },
 				owner
 			);
 
-			ILGenerator generator = method.GetILGenerator();
+			var generator = method.GetILGenerator();
 
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Castclass, classType);
@@ -515,8 +516,8 @@ namespace NTools.Core.DynamicCode {
 		}
 
 		class DelegateHelper {
-			private Type m_getterDelegateType;
-			private Type m_setterDelegateType;
+			private readonly Type m_getterDelegateType;
+			private readonly Type m_setterDelegateType;
 
 			public DelegateHelper(Type getterDelegateType, Type setterDelegateType) {
 				m_getterDelegateType = getterDelegateType;
@@ -533,14 +534,14 @@ namespace NTools.Core.DynamicCode {
 		}
 	}
 
-	public class PropertyProxy<Type, PropertyType> : MemberProxy {
-		private PropertyGetDelegate<Type, PropertyType> m_getter;
-		private PropertySetDelegate<Type, PropertyType> m_setter;
+	public class PropertyProxy<TType, TPropertyType> : MemberProxy {
+		private readonly PropertyGetDelegate<TType, TPropertyType> m_getter;
+		private readonly PropertySetDelegate<TType, TPropertyType> m_setter;
 
 		#region Constructor / Cleanup
 
 		public PropertyProxy(string propertyName)
-			: this(typeof(Type).GetProperty(propertyName)) {
+			: this(typeof(TType).GetProperty(propertyName)) {
 		}
 
 		public PropertyProxy(PropertyInfo info) : base(info) {
@@ -551,47 +552,47 @@ namespace NTools.Core.DynamicCode {
 		#endregion
 
 
-		public PropertyType GetValue(Type instance) {
+		public TPropertyType GetValue(TType instance) {
 			if (m_setter == null) {
 				throw new InvalidOperationException("m_setter == null");
 			}
 			return m_getter(instance);
 		}
 
-		public void SetValue(Type instance, PropertyType value) {
+		public void SetValue(TType instance, TPropertyType value) {
 			if (m_getter == null) {
 				throw new InvalidOperationException("m_getter == null");
 			}
 			m_setter(instance, value);
 		}
 
-		public static PropertyGetDelegate<Type, PropertyType> GetPropertyGetter(PropertyInfo propertyInfo) {
+		public static PropertyGetDelegate<TType, TPropertyType> GetPropertyGetter(PropertyInfo propertyInfo) {
 			if (propertyInfo == null) {
 				throw new ArgumentNullException("propertyInfo");
 			}
 
-			MethodInfo getter = propertyInfo.GetGetMethod();
+			var getter = propertyInfo.GetGetMethod();
 			if (getter != null) {
-				return (PropertyGetDelegate<Type, PropertyType>)Delegate.CreateDelegate(typeof(PropertyGetDelegate<Type, PropertyType>), getter);
+				return (PropertyGetDelegate<TType, TPropertyType>)Delegate.CreateDelegate(typeof(PropertyGetDelegate<TType, TPropertyType>), getter);
 			}
 			return null;
 		}
 
-		public static PropertySetDelegate<Type, PropertyType> GetPropertySetter(PropertyInfo propertyInfo) {
+		public static PropertySetDelegate<TType, TPropertyType> GetPropertySetter(PropertyInfo propertyInfo) {
 			if (propertyInfo == null) {
 				throw new ArgumentNullException("propertyInfo");
 			}
 
-			MethodInfo setter = propertyInfo.GetSetMethod();
+			var setter = propertyInfo.GetSetMethod();
 			if (setter != null) {
-				return (PropertySetDelegate<Type, PropertyType>) Delegate.CreateDelegate(typeof(PropertySetDelegate<Type, PropertyType>), setter);
+				return (PropertySetDelegate<TType, TPropertyType>) Delegate.CreateDelegate(typeof(PropertySetDelegate<TType, TPropertyType>), setter);
 			}
 			return null;
 		}
 	}
 
 
-	public class TypeUtility<Type> {
+	public class TypeUtility<TType> {
 
 	}
 

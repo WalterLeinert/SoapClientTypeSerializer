@@ -20,42 +20,42 @@ namespace NTools.Core.Reflection {
 			m_methods = new MethodDict();
 			m_staticMethods = new MethodDict();
 
-			FieldInfo[] fields = m_type.GetFields(MemberReflector.AllDeclared);
-			foreach (FieldInfo fi in fields) {
+			var fields = m_type.GetFields(MemberReflector.AllDeclared);
+			foreach (var fi in fields) {
 				m_fields.Add(fi.Name, new FieldReflector(fi));
 			}
 
-			MethodInfo[] methods = m_type.GetMethods(MemberReflector.PrivateInstanceDeclared);
+			var methods = m_type.GetMethods(MemberReflector.PrivateInstanceDeclared);
 
-			foreach (MethodInfo mi in methods) {
+			foreach (var mi in methods) {
 				m_methods.Add(BuildMethodSignature(mi), new MethodReflector(mi));
 			}
 
 			methods = m_type.GetMethods(MemberReflector.AllStaticDeclared);
 
-			foreach (MethodInfo mi in methods) {
+			foreach (var mi in methods) {
 				m_staticMethods.Add(BuildMethodSignature(mi), new MethodReflector(mi));
 			}
 		}
 
 
 		public static string BuildMethodSignature(MethodBase methodBase) {
-			TypeList parameterTypes = new TypeList();
-			foreach (ParameterInfo pi in methodBase.GetParameters()) {
+			var parameterTypes = new TypeList();
+			foreach (var pi in methodBase.GetParameters()) {
 				parameterTypes.Add(pi.ParameterType);
 			}
 
-		    Type[] types = parameterTypes.ToArray(); 
+		    var types = parameterTypes.ToArray(); 
             return BuildMethodSignature(methodBase.Name, types);
 		}
 
 
 		public static string BuildMethodSignature(string name, Type[] parameterTypes) {
-			StringBuilder sb = new StringBuilder(name);
+			var sb = new StringBuilder(name);
 
 			sb.Append("(");
-			bool first = true;
-			foreach (Type type in parameterTypes) {
+			var first = true;
+			foreach (var type in parameterTypes) {
 				if (!first) {
 					sb.Append(", ");
 				}
@@ -83,7 +83,7 @@ namespace NTools.Core.Reflection {
 				throw new ArgumentException(string.Format("Type {0} has no such field.", "name"));
 			}
 
-			return ((FieldReflector) m_fields[name]).GetValue(instance);
+			return m_fields[name].GetValue(instance);
 		}
 
 		public object GetField(string name) {
@@ -95,7 +95,7 @@ namespace NTools.Core.Reflection {
 				throw new ArgumentException(string.Format("Type {0} has no such field.", "name"));
 			}
 
-			return ((FieldReflector) m_fields[name]).GetValue(null);
+			return m_fields[name].GetValue(null);
 		}
 
 		public object Invoke(object instance, string methodName, object[] parameters) {
@@ -110,7 +110,7 @@ namespace NTools.Core.Reflection {
 				throw new ArgumentException(string.Format("Type {0} has no such method.", m_type), "methodName");
 			}
 
-			return ((MethodReflector) m_methods[methodName]).Invoke(instance, parameters);
+			return m_methods[methodName].Invoke(instance, parameters);
 		}
 
 		public object Invoke(string methodName, object[] parameters) {
@@ -122,7 +122,7 @@ namespace NTools.Core.Reflection {
 				throw new ArgumentException(string.Format("Type {0} has no such method.", m_type), "methodName");
 			}
 
-			return ((MethodReflector) m_staticMethods[methodName]).Invoke(null, parameters);
+			return m_staticMethods[methodName].Invoke(null, parameters);
 		}
 	}
 

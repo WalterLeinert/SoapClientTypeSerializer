@@ -1,13 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
 namespace NTools.Core.DynamicCode {
 
-	public delegate TField GetterDelegateGen<TClass, TField>(TClass instance);
-	public delegate void SetterDelegateGen<TClass, TField>(TClass instance, TField value);
+	public delegate TField GetterDelegateGen<in TClass, out TField>(TClass instance);
+	public delegate void SetterDelegateGen<in TClass, in TField>(TClass instance, TField value);
 
 
 	/// <summary>
@@ -131,8 +130,8 @@ namespace NTools.Core.DynamicCode {
 	}
 
 
-	public delegate TField GetterDelegate<TField>(object instance);
-	public delegate void SetterDelegate<TField>(object instance, TField value);
+	public delegate TField GetterDelegate<out TField>(object instance);
+	public delegate void SetterDelegate<in TField>(object instance, TField value);
 
 
 	/// <summary>
@@ -235,16 +234,17 @@ namespace NTools.Core.DynamicCode {
 		#region Constructor / Cleanup
 
 		static FieldProxyBase() {
-			s_knownFieldTypes = new Dictionary<Type, object>();
-			s_knownFieldTypes.Add(typeof (char), null);
-			s_knownFieldTypes.Add(typeof(bool), null);
-			s_knownFieldTypes.Add(typeof(short), null);
-			s_knownFieldTypes.Add(typeof(int), null); 
-			s_knownFieldTypes.Add(typeof (long), null); 
-			s_knownFieldTypes.Add(typeof (float), null);
-			s_knownFieldTypes.Add(typeof(double), null);
-			s_knownFieldTypes.Add(typeof(string), null);
-			s_knownFieldTypes.Add(typeof(DateTime), null);
+			s_knownFieldTypes = new Dictionary<Type, object> {
+				{typeof (char), null},
+				{typeof (bool), null},
+				{typeof (short), null},
+				{typeof (int), null},
+				{typeof (long), null},
+				{typeof (float), null},
+				{typeof (double), null},
+				{typeof (string), null},
+				{typeof (DateTime), null}
+			};
 		}
 
 		protected FieldProxyBase(FieldInfo fieldInfo) : base(fieldInfo) {
@@ -292,10 +292,9 @@ namespace NTools.Core.DynamicCode {
 		public TField GetValue<TField>(object instance) {
 			if (m_isValueType) {
 				return ((GetterDelegate<TField>)m_getterDelegate)(instance);
-			} else {
-				object o = ((GetterDelegate<object>)m_getterDelegate)(instance);
-				return (TField) o;
 			}
+			var o = ((GetterDelegate<object>)m_getterDelegate)(instance);
+			return (TField) o;
 		}
 
 		#endregion
@@ -323,7 +322,7 @@ namespace NTools.Core.DynamicCode {
 			if (m_isValueType) {
 				((SetterDelegate<TField>)m_setterDelegate)(instance, value);
 			} else {
-				((SetterDelegate<object>)m_setterDelegate)(instance, (object) value);
+				((SetterDelegate<object>)m_setterDelegate)(instance, value);
 			}
 		}
 		#endregion
@@ -337,13 +336,13 @@ namespace NTools.Core.DynamicCode {
 		/// <param name="owner">The owner.</param>
 		/// <returns></returns>
 		protected DynamicMethod CreateFieldGetter(Type classType, Type fieldType, Type owner) {
-			DynamicMethod method = new DynamicMethod(Info.Name + "___generatedGetter",
+			var method = new DynamicMethod(Info.Name + "___generatedGetter",
 				fieldType,
-				new Type[] { classType },
+				new[] { classType },
 				owner
 			);
 
-			ILGenerator generator = method.GetILGenerator();
+			var generator = method.GetILGenerator();
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Ldfld, Info);
 			generator.Emit(OpCodes.Ret);
@@ -359,13 +358,13 @@ namespace NTools.Core.DynamicCode {
 		/// <param name="owner">The owner.</param>
 		/// <returns></returns>
 		protected DynamicMethod CreateFieldSetter(Type classType, Type fieldType, Type owner) {
-			DynamicMethod method = new DynamicMethod(Info.Name + "___generatedSetter",
+			var method = new DynamicMethod(Info.Name + "___generatedSetter",
 				typeof(void),
 				new Type[] { classType, fieldType },
 				owner
 			);
 
-			ILGenerator generator = method.GetILGenerator();
+			var generator = method.GetILGenerator();
 			generator.Emit(OpCodes.Ldarg_0);
 			generator.Emit(OpCodes.Ldarg_1);
 			generator.Emit(OpCodes.Stfld, Info);

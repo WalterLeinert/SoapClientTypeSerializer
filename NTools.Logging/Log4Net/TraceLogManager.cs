@@ -1,10 +1,9 @@
 //- Standard Namespaces --------------------------------------------------
+
 using System;
 using System.Reflection;
-
-//- Zusätzliche Namespaces -----------------------------------------------
-using log4net;
 using log4net.Core;
+//- Zusätzliche Namespaces -----------------------------------------------
 
 //- Projekt Namespaces ---------------------------------------------------
 
@@ -23,7 +22,7 @@ namespace NTools.Logging.Log4Net {
 	/// um darüber <see cref="ILogger"/> Objekte zur Verfügung zu stellen.
 	/// </para>
 	/// </remarks>
-	public sealed class TraceLogManager {
+	public static class TraceLogManager {
 
 		#region Statische Member
 
@@ -35,11 +34,6 @@ namespace NTools.Logging.Log4Net {
 		#endregion
 
 		#region private Konstruktoren
-
-		/// <summary>
-		/// Privater Konstruktor verhindert die Erzeugung von Instanzen.
-		/// </summary>
-		private TraceLogManager() { }
 
 		#endregion
 
@@ -185,7 +179,7 @@ namespace NTools.Logging.Log4Net {
 		/// <param name="type">Der Typ der Loggers.</param>
 		/// <returns>Der gesuchte Logger oder null.</returns>
 		public static ITraceLog GetLogger(string domain, Type type) {
-			TraceLog traceLog = (TraceLog)WrapLogger(LoggerManager.GetLogger(domain, type));
+			var traceLog = (TraceLog)WrapLogger(LoggerManager.GetLogger(domain, type));
 			traceLog.DeclaringType = type;
 			return traceLog;
 		}
@@ -201,7 +195,7 @@ namespace NTools.Logging.Log4Net {
 		/// <param name="type">Der Typ der Loggers.</param>
 		/// <returns>Der gesuchte Logger oder null.</returns>
 		public static ITraceLog GetLogger(Assembly theAssembly, Type type) {
-			TraceLog traceLog = (TraceLog) WrapLogger(LoggerManager.GetLogger(theAssembly, type));
+			var traceLog = (TraceLog) WrapLogger(LoggerManager.GetLogger(theAssembly, type));
 			traceLog.DeclaringType = type;
 			return traceLog;
 		}
@@ -226,8 +220,8 @@ namespace NTools.Logging.Log4Net {
 		/// <param name="loggers">Arary von ILogger-Objekten, für die die Wrapper-Objekte zu liefern sind.</param>
 		/// <returns>Ein Array von ITraceLog Wrapper-Objekten.</returns>
 		public static ITraceLog[] WrapLoggers(ILogger[] loggers) {
-			ITraceLog[] results = new ITraceLog[loggers.Length];
-			for(int i=0; i<loggers.Length; i++) {
+			var results = new ITraceLog[loggers.Length];
+			for(var i=0; i<loggers.Length; i++) {
 				results[i] = WrapLogger(loggers[i]);
 			}
 			return results;

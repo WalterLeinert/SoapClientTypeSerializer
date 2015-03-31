@@ -6,7 +6,7 @@ namespace NTools.Logging.Log4Net {
 	public class LoggingEventQueue : Queue {
 		private static volatile int[] s_locker = new int[0];
 		private bool m_bufferingOn;
-		private int m_flushThreshold;
+		private readonly int m_flushThreshold;
 
 		public LoggingEventQueue(int capacity, int flushThreshold)
 			: base(capacity) {
@@ -36,7 +36,7 @@ namespace NTools.Logging.Log4Net {
 				Clear();
 			}
 
-			foreach (LoggingEventWrapper loggingEvent in loggingEvents) {
+			foreach (var loggingEvent in loggingEvents) {
 				traceLog.Logger.Log(loggingEvent);
 			}
 		}

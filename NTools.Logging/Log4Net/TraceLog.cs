@@ -1,10 +1,11 @@
 //- Standard Namespaces --------------------------------------------------
+
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
-
-//- Zusätzliche Namespaces -----------------------------------------------
 using log4net.Core;
+using log4net.Repository;
+//- Zusätzliche Namespaces -----------------------------------------------
 
 
 namespace NTools.Logging.Log4Net {
@@ -31,7 +32,7 @@ namespace NTools.Logging.Log4Net {
 		private Level m_levelEnabledMin = Level.Off;
 
 		public static readonly Level[] SupportedLevels =
-			new Level[] {Level.Trace, Level.Debug, Level.Info,  Level.Warn, Level.Error, Level.Fatal};
+			{Level.Trace, Level.Debug, Level.Info,  Level.Warn, Level.Error, Level.Fatal};
 		#endregion
 
         #region Public Konstruktoren
@@ -329,10 +330,10 @@ namespace NTools.Logging.Log4Net {
 		#endregion
 
         
-		protected override void ReloadLevels(log4net.Repository.ILoggerRepository repository) {
+		protected override void ReloadLevels(ILoggerRepository repository) {
             base.ReloadLevels(repository);
 
-            LevelMap levelMap = repository.LevelMap;
+            var levelMap = repository.LevelMap;
 
             m_levelDebug = levelMap.LookupWithDefault(Level.Debug);
             m_levelInfo = levelMap.LookupWithDefault(Level.Info);
@@ -341,7 +342,7 @@ namespace NTools.Logging.Log4Net {
             m_levelError = levelMap.LookupWithDefault(Level.Error);
             m_levelFatal = levelMap.LookupWithDefault(Level.Fatal);
 	
-			foreach (Level level in SupportedLevels) {
+			foreach (var level in SupportedLevels) {
 				if (Logger.IsEnabledFor(level)) {	
 					m_levelEnabledMin = Min<Level>(m_levelEnabledMin, level);
 				}
@@ -351,7 +352,7 @@ namespace NTools.Logging.Log4Net {
         }
 		
 		public static T Min<T>(T v1, T v2) where T : IComparable  {
-			int res = v1.CompareTo(v2);
+			var res = v1.CompareTo(v2);
 			if (res < 0) {
 				return v1;
 			} else {
@@ -374,7 +375,7 @@ namespace NTools.Logging.Log4Net {
     /// 
     /// </summary>
     public class LevelsReloadedEventArgs : EventArgs {
-        private LevelMap m_levelMap;
+        private readonly LevelMap m_levelMap;
 
 
         public LevelMap LevelMap {

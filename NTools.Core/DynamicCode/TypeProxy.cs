@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
 
 namespace NTools.Core.DynamicCode {
 	
@@ -13,17 +11,17 @@ namespace NTools.Core.DynamicCode {
 			s_fieldProxies = new Dictionary<string, FieldProxy<TClass>>();
 			s_propertyProxies = new Dictionary<string, PropertyProxy<TClass>>();
 
-			foreach (FieldInfo info in typeof(TClass).GetFields(MemberProxy.PrivateInstanceDeclared) ) {
+			foreach (var info in typeof(TClass).GetFields(MemberProxy.PrivateInstanceDeclared) ) {
 				s_fieldProxies.Add(info.Name, new FieldProxy<TClass>(info));
 			}
 		}
 
-		#region Filed Access
+		#region Field Access
 
 		private static FieldProxy<TClass> GetFieldProxy(string name) {
 			FieldProxy<TClass> proxy;
 			if (!s_fieldProxies.TryGetValue(name, out proxy)) {
-				FieldInfo info = typeof(TClass).GetField(name);
+				var info = typeof(TClass).GetField(name);
 				proxy = new FieldProxy<TClass>(info);
 				s_fieldProxies.Add(name, proxy);
 			}
@@ -47,7 +45,7 @@ namespace NTools.Core.DynamicCode {
 		private static PropertyProxy<TClass> GetPropertyProxy(string name) {
 			PropertyProxy<TClass> proxy;
 			if (!s_propertyProxies.TryGetValue(name, out proxy)) {
-				PropertyInfo info = typeof(TClass).GetProperty(name);
+				var info = typeof(TClass).GetProperty(name);
 				proxy = new PropertyProxy<TClass>(info);
 				s_propertyProxies.Add(name, proxy);
 			}
@@ -56,7 +54,7 @@ namespace NTools.Core.DynamicCode {
 
 
 		public T GetPropertyValue<T>(TClass instance, string name) {	
-			return (T) GetPropertyProxy(name).GetValueByDelegate<T>(instance);
+			return GetPropertyProxy(name).GetValueByDelegate<T>(instance);
 		}
 
 		public void SetPropertyValue<T>(TClass instance, string name, T value) {	
@@ -83,7 +81,7 @@ namespace NTools.Core.DynamicCode {
 
 			m_fieldProxies = new Dictionary<string, FieldProxy>();
 
-			foreach (FieldInfo info in m_type.GetFields(MemberProxy.PrivateInstanceDeclared)) {
+			foreach (var info in m_type.GetFields(MemberProxy.PrivateInstanceDeclared)) {
 				m_fieldProxies.Add(info.Name, new FieldProxy(info));
 			}
 		}

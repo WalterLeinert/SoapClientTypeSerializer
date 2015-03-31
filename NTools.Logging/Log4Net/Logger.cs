@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using log4net.Core;
+using NTools.Core;
 
 //- Zusätzliche Namespaces -----------------------------------------------
-using log4net.Repository;
-using log4net.Core;
-using log4net.Util;
-
-using NTools.Core;
 
 namespace NTools.Logging.Log4Net {
 
@@ -82,7 +78,7 @@ namespace NTools.Logging.Log4Net {
 		}
 
 		public void Log(Level level, string format, params object[] args) {
-			LoggingEvent ev = new LoggingEvent(null, m_traceLog.Logger.Repository, "name", level, string.Format(format, args), null);
+			var ev = new LoggingEvent(null, m_traceLog.Logger.Repository, "name", level, string.Format(format, args), null);
 		}
 		
 		#region IDisposable Member
@@ -91,7 +87,7 @@ namespace NTools.Logging.Log4Net {
 			if (m_logIsEnabled) {
 				m_timeEntered.Stop();
 
-				StringBuilder sb = new StringBuilder(ExitString);
+				var sb = new StringBuilder(ExitString);
 
 				if (m_methodBase != null) {
 					sb.Append(m_methodBase.Name);

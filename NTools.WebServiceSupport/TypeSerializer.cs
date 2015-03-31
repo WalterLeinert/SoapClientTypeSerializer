@@ -2,20 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Web.Services.Protocols;
 using System.Reflection;
 using System.Runtime.Serialization;
-
+using System.Web.Services;
+using System.Web.Services.Protocols;
+using log4net.Core;
 using NTools.Core.Reflection;
+using NTools.Logging.Log4Net;
 
 namespace NTools.WebServiceSupport {
 
     //- Logging Namespaces ---------------------------------------------------
 
-    using log4net.Core;
-    using Logging.Log4Net;
-
-    using TypeSerializerDictByType      = Dictionary<Type, TypeSerializer>;
+	using TypeSerializerDictByType      = Dictionary<Type, TypeSerializer>;
     using TypeSerializerDictByObject    = Dictionary<object, TypeSerializer>;
     using FieldSerializerDict           = Dictionary<string, FieldSerializer>;
     using ConstructorReflectorDict      = Dictionary<string, ConstructorReflector>;
@@ -58,24 +57,24 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="instance">The instance.</param>	
 		private TypeSerializer(object instance) {
-			using (EnterExitLogger log = new EnterExitLogger(s_log, "instance = {0}", instance)) {
+			using (var log = new EnterExitLogger(s_log, "instance = {0}", instance)) {
 				m_instance = instance;
 				m_type = m_instance.GetType();
 				m_fields = new FieldSerializerDict();
 				m_constructors = new ConstructorReflectorDict();
 
-				foreach (ConstructorInfo ci in m_type.GetConstructors(MemberReflector.AllInstanceDeclared)) {
-					ConstructorReflector ctor = new ConstructorReflector(ci);
+				foreach (var ci in m_type.GetConstructors(MemberReflector.AllInstanceDeclared)) {
+					var ctor = new ConstructorReflector(ci);
 					m_constructors.Add(TypeReflector.BuildMethodSignature(ci), ctor);
 					if (ctor.IsDefaultConstructor) {
 						m_defaultConstructor = ctor;
 					}
 				}
 
-				FieldInfo[] fields = m_type.GetFields(MemberReflector.AllInstanceDeclared);
+				var fields = m_type.GetFields(MemberReflector.AllInstanceDeclared);
 
-				foreach (FieldInfo fi in fields) {
-					object fieldValue = fi.GetValue(m_instance);
+				foreach (var fi in fields) {
+					var fieldValue = fi.GetValue(m_instance);
 					fieldValue = CreateSerializerWrapper(fieldValue);
 
 					m_fields.Add(fi.Name, new FieldSerializer(fi, fieldValue));
@@ -102,7 +101,7 @@ namespace NTools.WebServiceSupport {
 				throw new ArgumentException(string.Format("Type {0} has no such constructor.", m_type), "name");
 			}
 
-			return (ConstructorReflector) m_constructors[signature];
+			return m_constructors[signature];
 		}
 
 
@@ -115,17 +114,17 @@ namespace NTools.WebServiceSupport {
 		/// <returns></returns>
 		public static object CreateSerializerWrapper(object instance) {
 			if (instance != null) {
-				Type type = instance.GetType();
+				var type = instance.GetType();
 				if (type.IsArray) {
 					//
 					// Arrays
 					//
 					if (!IsSerializable(type.GetElementType())) {
-						object[] elements = (object[])instance;
-						TypeSerializer[] array = new TypeSerializer[elements.Length];
+						var elements = (object[])instance;
+						var array = new TypeSerializer[elements.Length];
 						if (elements.Length > 0) {
-							for (int i = 0; i < elements.Length; i++) {
-								array[i] = (TypeSerializer)TypeSerializer.CreateSerializerWrapper(elements[i]);
+							for (var i = 0; i < elements.Length; i++) {
+								array[i] = (TypeSerializer)CreateSerializerWrapper(elements[i]);
 							}
 						}
 
@@ -136,19 +135,19 @@ namespace NTools.WebServiceSupport {
 					// Behandlung von Hashtables
 					//
 
-					Hashtable ht = new Hashtable();
+					var ht = new Hashtable();
 					foreach (DictionaryEntry de in ((Hashtable)instance)) {
-						object key = de.Key;
-						object value = de.Value;
+						var key = de.Key;
+						var value = de.Value;
 
-						key = TypeSerializer.CreateSerializerWrapper(key);
-						value = TypeSerializer.CreateSerializerWrapper(value);
+						key = CreateSerializerWrapper(key);
+						value = CreateSerializerWrapper(value);
 
 						ht.Add(key, value);
 					}
 					instance = ht;
 				} else if (!IsSerializable(type)) {
-					instance = TypeSerializer.CreateSerializer(instance);
+					instance = CreateSerializer(instance);
 				}
 			}
 
@@ -168,7 +167,7 @@ namespace NTools.WebServiceSupport {
 				serializer = new TypeSerializer(instance);
 				s_instances.Add(instance, serializer);
 			} else {
-				serializer = (TypeSerializer) s_instances[instance];
+				serializer = s_instances[instance];
 			}
 
 			return serializer;
@@ -191,7 +190,7 @@ namespace NTools.WebServiceSupport {
 				return true;
 			}
 
-			SerializableAttribute[] serializableAttributes = (SerializableAttribute[])type.GetCustomAttributes(typeof(SerializableAttribute), false);
+			var serializableAttributes = (SerializableAttribute[])type.GetCustomAttributes(typeof(SerializableAttribute), false);
 			return (serializableAttributes.Length > 0);
 		}
 
@@ -219,7 +218,7 @@ namespace NTools.WebServiceSupport {
 		/// <param name="stream">The stream.</param>
 		/// <param name="objectGraph">The object graph.</param>
 		public static void Serialize(IFormatter formatter, Stream stream, object objectGraph) {
-			using (EnterExitLogger log = new EnterExitLogger(s_log, Level.Info, "objectGraph = {0}, type = {1}", objectGraph,
+			using (var log = new EnterExitLogger(s_log, Level.Info, "objectGraph = {0}, type = {1}", objectGraph,
 				objectGraph as TypeSerializer != null ? ((TypeSerializer) objectGraph).m_type.FullName : "-")) {
 				formatter.Serialize(stream, objectGraph);
 			}
@@ -235,13 +234,13 @@ namespace NTools.WebServiceSupport {
 		/// <param name="webServiceType">Type of the web service.</param>
 		/// <returns></returns>
 		public static object Deserialize(IFormatter formatter, Stream stream) {
-			using (EnterExitLogger log = new EnterExitLogger(s_log, Level.Info)) {
+			using (var log = new EnterExitLogger(s_log, Level.Info)) {
 
-				TypeSerializer typeSerializer = (TypeSerializer)formatter.Deserialize(stream);
-				ConstructorInfo[] constructors = typeSerializer.m_type.GetConstructors(MemberReflector.AllInstanceDeclared);
+				var typeSerializer = (TypeSerializer)formatter.Deserialize(stream);
+				var constructors = typeSerializer.m_type.GetConstructors(MemberReflector.AllInstanceDeclared);
 
-				ConstructorReflector ctor = new ConstructorReflector(typeSerializer.m_type, new Type[] { typeof(Type) }, MemberReflector.AllInstanceDeclared);
-				object rval = ctor.Invoke(new object[] { typeof(EmptyWebService) });
+				var ctor = new ConstructorReflector(typeSerializer.m_type, new Type[] { typeof(Type) }, MemberReflector.AllInstanceDeclared);
+				var rval = ctor.Invoke(new object[] { typeof(EmptyWebService) });
 
 				typeSerializer.Deserialize(rval);
 
@@ -263,21 +262,21 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="instance">The instance.</param>
 		private object Deserialize(object instance) {
-			using (EnterExitLogger log = new EnterExitLogger(s_log, "instance = {0}, type = {1}", instance, m_type)) {
+			using (var log = new EnterExitLogger(s_log, "instance = {0}, type = {1}", instance, m_type)) {
 
 				if (instance == null) {
 					if (DefaultConstructor != null) {
 						instance = DefaultConstructor.Invoke(null);
 					} else {
 						if (m_type.IsArray) {
-							Type elementType = m_type.GetElementType();
+							var elementType = m_type.GetElementType();
 
-							ConstructorReflector arrayCtor = GetConstructor(".ctor(System.Int32)");
+							var arrayCtor = GetConstructor(".ctor(System.Int32)");
 
 							//
 							// Dummy: Array mit einem Element anlegen
 							//
-							object[] array = (object[])arrayCtor.Invoke(new object[] { 1 });
+							var array = (object[])arrayCtor.Invoke(new object[] { 1 });
 
 							if (!elementType.IsAbstract) {
 								//ConstructorReflector elCtor = new ConstructorReflector(elementType, MemberReflector.AllInstanceDeclared);
@@ -294,14 +293,14 @@ namespace NTools.WebServiceSupport {
 							// mit einem MethodInfo-Parameter hat! -> wir erzeugen einen Dummy-Konstruktorparameter;
 							// die konkreten Member werden bei der Deserialisierung gesetzt.
 							//
-							TypeReflector tr = new TypeReflector(typeof(DummyInfoWebService));
-							MethodInfo mi = typeof(DummyInfoWebService).GetMethod("getString");
+							var tr = new TypeReflector(typeof(DummyInfoWebService));
+							var mi = typeof(DummyInfoWebService).GetMethod("getString");
 
-							ConstructorReflector rtmiCtor = new ConstructorReflector(Type.GetType("System.Reflection.RuntimeMethodInfo"));
-							object rtmi = rtmiCtor.Invoke(null);
+							var rtmiCtor = new ConstructorReflector(Type.GetType("System.Reflection.RuntimeMethodInfo"));
+							var rtmi = rtmiCtor.Invoke(null);
 
-							string ctorSignature = TypeReflector.BuildMethodSignature(".ctor", new Type[] { Type.GetType("System.Reflection.MethodInfo") });
-							ConstructorReflector ctor = GetConstructor(ctorSignature);
+							var ctorSignature = TypeReflector.BuildMethodSignature(".ctor", new Type[] { Type.GetType("System.Reflection.MethodInfo") });
+							var ctor = GetConstructor(ctorSignature);
 							instance = ctor.Invoke(new object[] { mi });
 						} else {
 							throw new InvalidOperationException(string.Format("Type {0} has no default constructor", m_type));
@@ -312,21 +311,21 @@ namespace NTools.WebServiceSupport {
 				//
 				// Deseralisierung der Member
 				//
-				foreach (FieldSerializer field in m_fields.Values) {
-					object fieldValue = field.Value;
+				foreach (var field in m_fields.Values) {
+					var fieldValue = field.Value;
 
-					TypeSerializer fieldSerializer = field.Value as TypeSerializer;
+					var fieldSerializer = field.Value as TypeSerializer;
 
 					if (fieldSerializer != null) {
-						object instanceFieldValue = fieldSerializer.Deserialize();
+						var instanceFieldValue = fieldSerializer.Deserialize();
 						field.SetValue(instance, instanceFieldValue);
 
 					} else if (field.Value != null) {
 						if (field.Value is Hashtable) {
-							Hashtable ht = new Hashtable();
+							var ht = new Hashtable();
 							foreach (DictionaryEntry de in ((Hashtable)field.Value)) {
-								object key = de.Key;
-								object value = de.Value;
+								var key = de.Key;
+								var value = de.Value;
 
 								if (key is TypeSerializer) {
 									key = ((TypeSerializer)key).Deserialize();
@@ -342,12 +341,12 @@ namespace NTools.WebServiceSupport {
 							field.SetValue(instance, ht);
 
 						} else if (field.Info.FieldType.IsArray) {
-							object[] fieldValues = (object[])field.Value;
+							var fieldValues = (object[])field.Value;
 
-							ConstructorReflector ctor = new ConstructorReflector(field.Info.FieldType, new Type[] { typeof(int) }, MemberReflector.AllInstanceDeclared);
+							var ctor = new ConstructorReflector(field.Info.FieldType, new Type[] { typeof(int) }, MemberReflector.AllInstanceDeclared);
 
-							object[] array = (object[])ctor.Invoke(new object[] { fieldValues.Length });
-							for (int i = 0; i < fieldValues.Length; i++) {
+							var array = (object[])ctor.Invoke(new object[] { fieldValues.Length });
+							for (var i = 0; i < fieldValues.Length; i++) {
 								if (fieldValues[i] is TypeSerializer) {
 									array[i] = ((TypeSerializer)fieldValues[i]).Deserialize();
 								} else {
@@ -373,7 +372,7 @@ namespace NTools.WebServiceSupport {
 		/// Dummy WebService-Proxy, der keine Methoden enthält und sehr schnell im Konstruktor von 
 		/// SoapHttpClientProtocol bzw. WebClientProtocol intern analysiert werden kann.
 		/// </summary>
-		[System.Web.Services.WebServiceBindingAttribute(
+		[WebServiceBinding(
 			Name = "DummyWebServiceType",
 		   Namespace = "http://www.themindelectric.com/wsdl/DummyWebServiceType/")]
 		class EmptyWebService : SoapHttpClientProtocol {

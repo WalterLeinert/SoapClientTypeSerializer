@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-
-//- Zusätzliche Namespaces -----------------------------------------------
-using log4net.Repository;
 using log4net.Core;
-using log4net.Util;
+//- Zusätzliche Namespaces -----------------------------------------------
 
 namespace NTools.Logging {
 
@@ -30,19 +26,19 @@ namespace NTools.Logging {
 		/// <summary>
 		/// der Log-Level
 		/// </summary>
-		private Level m_level;
+		private readonly Level m_level;
 
 		/// <summary>
 		/// Methodeninformation aus dem Stackframe
 		/// </summary>
-		private MethodBase m_methodBase;
+		private readonly MethodBase m_methodBase;
 
 		private Type m_callerStackDeclaringType;
 
 		/// <summary>
 		/// der Methodenname
 		/// </summary>
-		private string m_method;
+		private readonly string m_method;
 
 		private bool m_logIsEnabled;
 
@@ -90,7 +86,7 @@ namespace NTools.Logging {
 			if (m_logIsEnabled) {
 				m_timeEntered.Stop();
 
-				StringBuilder sb = new StringBuilder(ExitString);
+				var sb = new StringBuilder(ExitString);
 
 				if (m_methodBase != null) {
 					sb.Append(m_methodBase.Name);

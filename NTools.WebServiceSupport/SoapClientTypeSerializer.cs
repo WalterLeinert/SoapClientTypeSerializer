@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Web.Services.Protocols;
-using System.Reflection;
 using System.IO;
-using System.Web.Services;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
-
+using System.Web.Services;
+using System.Web.Services.Protocols;
 using NTools.Core.Reflection;
 
 namespace NTools.WebServiceSupport {
@@ -35,7 +34,7 @@ namespace NTools.WebServiceSupport {
 		/// Der Name enthält die Assembly-Versionsnummer des zugehörigen Assemblies: Service-2.0.0.0.SoapClientType
 		/// </remarks>
 		private static string GetSerializerPath(Type webServiceType) {
-			string filePath = Path.GetDirectoryName(webServiceType.Assembly.Location);
+			var filePath = Path.GetDirectoryName(webServiceType.Assembly.Location);
 			return Path.Combine(filePath, Path.ChangeExtension(webServiceType.Name,
 				"-" + webServiceType.Assembly.GetName().Version.ToString() + 
 				"." + SerializerExtension));
@@ -48,15 +47,15 @@ namespace NTools.WebServiceSupport {
 		/// <param name="assembly">Die Assembly mit den WebService-Proxyklassen.</param>
 		/// <returns> WebService-Proxytypen.</returns>
 		private static TypeList GetWebserviceTypes(Assembly assembly) {
-			Type[] exportedTypes = assembly.GetExportedTypes();
-			TypeList webServiceTypes = new TypeList();
+			var exportedTypes = assembly.GetExportedTypes();
+			var webServiceTypes = new TypeList();
 
-			foreach (Type type in exportedTypes) {
+			foreach (var type in exportedTypes) {
 				if (type.IsAbstract) {
 					continue;
 				}
 
-				WebServiceBindingAttribute[] serviceBindingAttributes = (WebServiceBindingAttribute[])type.GetCustomAttributes(typeof(WebServiceBindingAttribute), false);
+				var serviceBindingAttributes = (WebServiceBindingAttribute[])type.GetCustomAttributes(typeof(WebServiceBindingAttribute), false);
 				if (serviceBindingAttributes != null && serviceBindingAttributes.Length == 1) {
 					webServiceTypes.Add(type);
 				}
@@ -71,9 +70,9 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="assembly">Die Assembly mit den WebService-Proxyklassen.</param>
 		public static void SerializeClientTypes(Assembly assembly) {
-			TypeList webServiceTypes = GetWebserviceTypes(assembly);
+			var webServiceTypes = GetWebserviceTypes(assembly);
 
-			foreach (Type webServiceType in webServiceTypes) {
+			foreach (var webServiceType in webServiceTypes) {
 				SerializeClientType(webServiceType);
 			}
 		}
@@ -86,24 +85,24 @@ namespace NTools.WebServiceSupport {
 		public static void SerializeClientType(Type webServiceType) {
 			IFormatter formatter = new BinaryFormatter();
 
-			using (FileStream stream = new FileStream(GetSerializerPath(webServiceType), FileMode.OpenOrCreate)) {
+			using (var stream = new FileStream(GetSerializerPath(webServiceType), FileMode.OpenOrCreate)) {
 
 				//
 				// WebService-Proxy instantiieren -> SoapClientType wird über Reflection erzeugt
 				//
-				ConstructorEventArgs ce = new ConstructorEventArgs(webServiceType);
+				var ce = new ConstructorEventArgs(webServiceType);
 				if (Constructing != null) {
 					Constructing(null, ce);
 				}
-				ConstructorReflector ctor = new ConstructorReflector(webServiceType, ce.Types, MemberReflector.AllInstanceDeclared);
-				object webServiceInstance = ctor.Invoke(ce.Args);
+				var ctor = new ConstructorReflector(webServiceType, ce.Types, MemberReflector.AllInstanceDeclared);
+				var webServiceInstance = ctor.Invoke(ce.Args);
 
 				//
 				// SoapClientType-Field ermitteln und serialisieren
 				//
-				object reflectedClientType = s_clientTypeReflector.GetValue(webServiceInstance);
+				var reflectedClientType = s_clientTypeReflector.GetValue(webServiceInstance);
 
-				TypeSerializer serializer = (TypeSerializer)TypeSerializer.CreateSerializerWrapper(reflectedClientType);
+				var serializer = (TypeSerializer)TypeSerializer.CreateSerializerWrapper(reflectedClientType);
 
 				TypeSerializer.Serialize(formatter, stream, serializer);
 			}
@@ -115,9 +114,9 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="assembly">Die Assembly mit den WebService-Proxyklassen.</param>
 		public static void DeserializeClientTypes(Assembly assembly) {
-			TypeList webServiceTypes = GetWebserviceTypes(assembly);
+			var webServiceTypes = GetWebserviceTypes(assembly);
 
-			foreach (Type webServiceType in webServiceTypes) {
+			foreach (var webServiceType in webServiceTypes) {
 				DeserializeClientType(webServiceType);
 			}			
 		}
@@ -130,18 +129,18 @@ namespace NTools.WebServiceSupport {
 		/// <param name="webServiceType">Der WebService-Proxytyp.</param>
 		public static void DeserializeClientType(Type webServiceType) {
 			if (!IsCached(webServiceType)) {
-				string filename = GetSerializerPath(webServiceType);
+				var filename = GetSerializerPath(webServiceType);
 
 				if (File.Exists(filename)) {
-					BinaryFormatter formatter = new BinaryFormatter();
+					var formatter = new BinaryFormatter();
 
-					TypeReflector webClientProtocolReflector = new TypeReflector(typeof(WebClientProtocol));
-					object cache = webClientProtocolReflector.GetField("cache");
-					TypeReflector cacheReflector = new TypeReflector(cache.GetType());
-					Hashtable cacheHashtable = (Hashtable)cacheReflector.GetField(cache, "cache");
+					var webClientProtocolReflector = new TypeReflector(typeof(WebClientProtocol));
+					var cache = webClientProtocolReflector.GetField("cache");
+					var cacheReflector = new TypeReflector(cache.GetType());
+					var cacheHashtable = (Hashtable)cacheReflector.GetField(cache, "cache");
 
 					object deserializedClientType = null;
-					using (FileStream stream = new FileStream(filename, FileMode.Open)) {
+					using (var stream = new FileStream(filename, FileMode.Open)) {
 						deserializedClientType = TypeSerializer.Deserialize(formatter, stream);
 						webClientProtocolReflector.Invoke("AddToCache(System.Type, System.Object)", new object[] { webServiceType, deserializedClientType });
 					}
@@ -159,7 +158,7 @@ namespace NTools.WebServiceSupport {
 		/// sonst <c>false</c>.
 		/// </returns>
 		public static bool IsCached(Type webServiceType) {
-			object cachedClientType = s_webClientProtocolReflector.Invoke("GetFromCache(System.Type)", new object[] { webServiceType });
+			var cachedClientType = s_webClientProtocolReflector.Invoke("GetFromCache(System.Type)", new object[] { webServiceType });
 			return (cachedClientType != null);
 		}
 

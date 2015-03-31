@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
-
-//- Zusätzliche Namespaces -----------------------------------------------
-using log4net.Repository;
 using log4net.Core;
+using log4net.Repository;
+//- Zusätzliche Namespaces -----------------------------------------------
 
 
 namespace NTools.Logging.Log4Net {
@@ -112,12 +110,12 @@ namespace NTools.Logging.Log4Net {
 						eventWrapper.m_message, eventWrapper.m_exception);
 			}
 
-			string elapsedInfo = string.Empty;
+			var elapsedInfo = string.Empty;
 			if (eventWrapper.m_elapsedSet) {
 				elapsedInfo = string.Format(" (elapsed = {0,1:F2} msec)", (double) eventWrapper.m_elapsed.Milliseconds);
 			}
 
-			StringBuilder sb = new StringBuilder(EnterExitLogger.EnterExitStrings[(int)eventWrapper.m_enterExit]);
+			var sb = new StringBuilder(EnterExitLogger.EnterExitStrings[(int)eventWrapper.m_enterExit]);
 			sb.Append(eventWrapper.m_methodName);
 			if (elapsedInfo.Length > 0) {
 				sb.Append(sb);

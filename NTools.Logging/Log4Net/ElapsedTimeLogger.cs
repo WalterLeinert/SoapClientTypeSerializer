@@ -1,9 +1,7 @@
 using System;
-using System.Text;
 using System.Collections;
 using System.Globalization;
-
-using NTools.Logging;
+using System.Text;
 
 namespace NTools.Logging.Log4Net {
 
@@ -22,7 +20,7 @@ namespace NTools.Logging.Log4Net {
 	///			</appender>	
 	///		...
 	///		
-	///			<logger name="HP.Dpma.Sys.Diagnostics.ElapsedTimeLogger">
+	///			<logger name="NTools.Logging.Log4Net.ElapsedTimeLogger">
 	///				<level value="INFO" />
 	///				<appender-ref ref="ElapsedTimeAppender" />
 	///			</logger>	
@@ -31,7 +29,7 @@ namespace NTools.Logging.Log4Net {
 	///	</code>	
 	/// </remarks>
 	public class ElapsedTimeLogger : IDisposable {
-		private static ITraceLog	s_log = TraceLogManager.GetLogger(typeof(ElapsedTimeLogger));
+		private static readonly ITraceLog	s_log = TraceLogManager.GetLogger(typeof(ElapsedTimeLogger));
 
 		private static string			s_logSeparator = " ";
 
@@ -45,13 +43,13 @@ namespace NTools.Logging.Log4Net {
 		/// <summary>
 		/// Der Name des Messpunkts
 		/// </summary>
-		private string					m_key;
+		private readonly string					m_key;
 
 		/// <summary>
 		/// Falls <c>true</c> wird die Messung im Konstruktor begonnen und in <see cref="Dispose"/>
 		/// beendet und gelogged
 		/// </summary>
-		private bool					m_logOnDispose;
+		private readonly bool			m_logOnDispose;
 
 		/// <summary>
 		/// Falls <c>true</c> wird der Name <c>m_key</c> des Messpunktes mit einer Fehlerkennung 
@@ -62,7 +60,7 @@ namespace NTools.Logging.Log4Net {
 		/// <summary>
 		/// Zusätzliche optionale Liste von weiteren Werten für die Messung.
 		/// </summary>
-		private ArrayList				m_values;
+		private readonly ArrayList		m_values;
 
 
 		#region Konstruktor / Cleanup
@@ -113,7 +111,7 @@ namespace NTools.Logging.Log4Net {
 		/// Schreibt einen Log-Eintrag in den konfigurierten log4net-Appender.
 		/// </summary>
 		private void Log() {
-			StringBuilder sb = new StringBuilder();
+			var sb = new StringBuilder();
 
 			sb.Append(m_key);
 			if ( OperationInError ) {
@@ -122,10 +120,10 @@ namespace NTools.Logging.Log4Net {
 			sb.Append(s_logSeparator);
 			sb.Append(m_timer.ElapsedMilliseconds.ToString(CultureInfo.InvariantCulture));
 
-			foreach (object val in m_values) {
+			foreach (var val in m_values) {
 				sb.Append(s_logSeparator);
 
-				IConvertible convertible = val as IConvertible;
+				var convertible = val as IConvertible;
 
 				if (convertible != null) {
 					sb.Append(convertible.ToString(CultureInfo.InvariantCulture));
@@ -196,7 +194,7 @@ namespace NTools.Logging.Log4Net {
 		}
 
 		public TimeSpan Delta {
-			get { return new TimeSpan((long) m_timer.Ticks); }
+			get { return new TimeSpan(m_timer.Ticks); }
 		}
 		
 	}
