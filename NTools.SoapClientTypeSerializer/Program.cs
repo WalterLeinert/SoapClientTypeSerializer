@@ -1,3 +1,4 @@
+using NTools.Logging.Log4Net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +7,8 @@ using System.Reflection;
 namespace NTools.WebServiceSupport.Tools {
 
 	class Program {
+        private static readonly ITraceLog s_log = TraceLogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 		private static readonly List<Type> s_constructorTypes = new List<Type>();
 		private static string s_modelDirectory;
 
@@ -18,6 +21,7 @@ namespace NTools.WebServiceSupport.Tools {
 		/// args[1]: web service proxy constructor types (type names)
 		/// </remarks>
 		static void Main(string[] args) {
+            using (var log = new EnterExitLogger(s_log)) {
 #if (false)
 			Type[] exportedTypes = typeof(AkteWebService).Assembly.GetExportedTypes();
 
@@ -39,54 +43,55 @@ namespace NTools.WebServiceSupport.Tools {
 			}
 #endif
 
-			AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
+                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
 
-			var assembly = Assembly.LoadFrom(args[0]);
+                var assembly = Assembly.LoadFrom(args[0]);
 
-			s_modelDirectory = Path.GetDirectoryName(assembly.Location);
+                s_modelDirectory = Path.GetDirectoryName(assembly.Location);
 
-			var serializerFileName = assembly.Location;
-			serializerFileName = Path.ChangeExtension(serializerFileName, ".XmlSerializers.dll");
+                var serializerFileName = assembly.Location;
+                serializerFileName = Path.ChangeExtension(serializerFileName, ".XmlSerializers.dll");
 
-			if (File.Exists(serializerFileName)) {
-				var serializerAssembly = Assembly.LoadFrom(serializerFileName);
-			}
+                if (File.Exists(serializerFileName)) {
+                    var serializerAssembly = Assembly.LoadFrom(serializerFileName);
+                }
 
 
-			if (args.Length > 1) {
-				var constructorTypes = args[1].Split(new char[] {';'});
+                if (args.Length > 1) {
+                    var constructorTypes = args[1].Split(new char[] { ';' });
 
-				foreach (var constructorType in constructorTypes) {
-					var typeParts = constructorType.Split(new char[] {','});
+                    foreach (var constructorType in constructorTypes) {
+                        var typeParts = constructorType.Split(new char[] { ',' });
 
-					Type type;
-					if (typeParts.Length > 1) {
-						var asmName = typeParts[1].Trim();
-						var asmPath = Path.Combine(s_modelDirectory, asmName);
-						asmPath = Path.ChangeExtension(asmPath, ".dll");
+                        Type type;
+                        if (typeParts.Length > 1) {
+                            var asmName = typeParts[1].Trim();
+                            var asmPath = Path.Combine(s_modelDirectory, asmName);
+                            asmPath = Path.ChangeExtension(asmPath, ".dll");
 
-						//Assembly asm = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(assembly.Location), "ObjectManagement.dll"));
-						var asm = Assembly.LoadFrom(asmPath);
-						type = asm.GetType(typeParts[0]);
-					} else {
-						type = Type.GetType(constructorType);
-					}
+                            //Assembly asm = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(assembly.Location), "ObjectManagement.dll"));
+                            var asm = Assembly.LoadFrom(asmPath);
+                            type = asm.GetType(typeParts[0]);
+                        } else {
+                            type = Type.GetType(constructorType);
+                        }
 
-					if (type != null) {
-						s_constructorTypes.Add(type);
-					}
-				}
-			}
+                        if (type != null) {
+                            s_constructorTypes.Add(type);
+                        }
+                    }
+                }
 
-			var currentDirectory = Environment.CurrentDirectory;
+                var currentDirectory = Environment.CurrentDirectory;
 
-			try {
-				Environment.CurrentDirectory = Path.GetDirectoryName(assembly.Location);
-				SoapClientTypeSerializer.Constructing += new EventHandler<ConstructorEventArgs>(SoapClientTypeSerializerConstructing);
-				SoapClientTypeSerializer.SerializeClientTypes(assembly);
-			} finally {
-				Environment.CurrentDirectory = currentDirectory;
-			}
+                try {
+                    Environment.CurrentDirectory = Path.GetDirectoryName(assembly.Location);
+                    SoapClientTypeSerializer.Constructing += new EventHandler<ConstructorEventArgs>(SoapClientTypeSerializerConstructing);
+                    SoapClientTypeSerializer.SerializeClientTypes(assembly);
+                } finally {
+                    Environment.CurrentDirectory = currentDirectory;
+                }
+            }
 		}
 
 		static void SoapClientTypeSerializerConstructing(object sender, ConstructorEventArgs e) {
@@ -113,7 +118,7 @@ namespace NTools.WebServiceSupport.Tools {
 	}
 
 
-	internal class Tester {
+	class Tester {
 
 		private static void Main(string[] args) {
 			var assembly = Assembly.LoadFrom(args[0]);

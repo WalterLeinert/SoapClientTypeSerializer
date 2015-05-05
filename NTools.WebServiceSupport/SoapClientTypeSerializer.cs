@@ -11,9 +11,11 @@ using NTools.Core.Reflection;
 
 namespace NTools.WebServiceSupport {
     using TypeList      = List<Type>;
+    using NTools.Logging.Log4Net;
 
 
 	public sealed class SoapClientTypeSerializer {
+        private static readonly ITraceLog s_log = TraceLogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 		
 		/// <summary>
 		/// Die Fileextension für die serialisierten SoapClientTypes.
