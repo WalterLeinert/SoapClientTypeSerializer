@@ -2,68 +2,79 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using log4net.Core;
+using NTools.Logging.Log4Net;
 
-namespace NTools.Core.Reflection {    
+namespace NTools.Core.Reflection {
+    
     using FieldDict     = Dictionary<string, FieldReflector>;
     using MethodDict    = Dictionary<string, MethodReflector>;
     using TypeList      = List<Type>;
 
-    public class TypeReflector {		
+    public class TypeReflector {
+        private static readonly ITraceLog s_log = TraceLogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 		private readonly Type m_type;
 		private readonly FieldDict  m_fields;
 		private readonly MethodDict m_methods;
         private readonly MethodDict m_staticMethods;
 
         public TypeReflector(Type type) {
-			m_type = type;
-            m_fields = new FieldDict();
-			m_methods = new MethodDict();
-			m_staticMethods = new MethodDict();
+            using (var log = new EnterExitLogger(s_log, Level.Info, "type = {0}", type)) {
+                m_type = type;
+                m_fields = new FieldDict();
+                m_methods = new MethodDict();
+                m_staticMethods = new MethodDict();
 
-			var fields = m_type.GetFields(MemberReflector.AllDeclared);
-			foreach (var fi in fields) {
-				m_fields.Add(fi.Name, new FieldReflector(fi));
-			}
+                var fields = m_type.GetFields(MemberReflector.AllDeclared);
+                foreach (var fi in fields) {
+                    m_fields.Add(fi.Name, new FieldReflector(fi));
+                }
 
-			var methods = m_type.GetMethods(MemberReflector.PrivateInstanceDeclared);
+                var methods = m_type.GetMethods(MemberReflector.PrivateInstanceDeclared);
 
-			foreach (var mi in methods) {
-				m_methods.Add(BuildMethodSignature(mi), new MethodReflector(mi));
-			}
+                foreach (var mi in methods) {
+                    m_methods.Add(BuildMethodSignature(mi), new MethodReflector(mi));
+                }
 
-			methods = m_type.GetMethods(MemberReflector.AllStaticDeclared);
+                methods = m_type.GetMethods(MemberReflector.AllStaticDeclared);
 
-			foreach (var mi in methods) {
-				m_staticMethods.Add(BuildMethodSignature(mi), new MethodReflector(mi));
-			}
-		}
+                foreach (var mi in methods) {
+                    m_staticMethods.Add(BuildMethodSignature(mi), new MethodReflector(mi));
+                }
+            }
+        }
 
 
 		public static string BuildMethodSignature(MethodBase methodBase) {
-			var parameterTypes = new TypeList();
-			foreach (var pi in methodBase.GetParameters()) {
-				parameterTypes.Add(pi.ParameterType);
-			}
+            using (var log = new EnterExitLogger(s_log, Level.Info, "methodBase = {0}", methodBase)) {
+		        var parameterTypes = new TypeList();
+		        foreach (var pi in methodBase.GetParameters()) {
+		            parameterTypes.Add(pi.ParameterType);
+		        }
 
-		    var types = parameterTypes.ToArray(); 
-            return BuildMethodSignature(methodBase.Name, types);
+		        var types = parameterTypes.ToArray();
+		        return BuildMethodSignature(methodBase.Name, types);
+		    }
 		}
 
 
 		public static string BuildMethodSignature(string name, Type[] parameterTypes) {
-			var sb = new StringBuilder(name);
+            using (var log = new EnterExitLogger(s_log, Level.Info, "name = {0}, parameterTypes = {1}", name, parameterTypes)) {
+		        var sb = new StringBuilder(name);
 
-			sb.Append("(");
-			var first = true;
-			foreach (var type in parameterTypes) {
-				if (!first) {
-					sb.Append(", ");
-				}
-				sb.Append(type.FullName);
-				first = false;
-			}
-			sb.Append(")");
-			return sb.ToString();
+		        sb.Append("(");
+		        var first = true;
+		        foreach (var type in parameterTypes) {
+		            if (!first) {
+		                sb.Append(", ");
+		            }
+		            sb.Append(type.FullName);
+		            first = false;
+		        }
+		        sb.Append(")");
+		        return sb.ToString();
+		    }
 		}
 
 
@@ -99,30 +110,34 @@ namespace NTools.Core.Reflection {
 		}
 
 		public object Invoke(object instance, string methodName, object[] parameters) {
-			if (instance == null) {
-				throw new ArgumentNullException("instance");
-			}
-            if (String.IsNullOrEmpty(methodName)) {
-				throw new ArgumentNullException("methodName");
-			}
+            using (var log = new EnterExitLogger(s_log, Level.Info, "instance = {0}, methodName = {1}, parameters = {2}", instance, methodName, parameters)) {
+		        if (instance == null) {
+		            throw new ArgumentNullException("instance");
+		        }
+		        if (String.IsNullOrEmpty(methodName)) {
+		            throw new ArgumentNullException("methodName");
+		        }
 
-			if (!m_methods.ContainsKey(methodName)) {
-				throw new ArgumentException(string.Format("Type {0} has no such method.", m_type), "methodName");
-			}
+		        if (!m_methods.ContainsKey(methodName)) {
+		            throw new ArgumentException(string.Format("Type {0} has no such method.", m_type), "methodName");
+		        }
 
-			return m_methods[methodName].Invoke(instance, parameters);
+		        return m_methods[methodName].Invoke(instance, parameters);
+		    }
 		}
 
 		public object Invoke(string methodName, object[] parameters) {
-            if (String.IsNullOrEmpty(methodName)) {
-				throw new ArgumentNullException("methodName");
-			}
+            using (var log = new EnterExitLogger(s_log, Level.Info, "methodName = {0}, parameters = {1}", methodName, parameters)) {
+		        if (String.IsNullOrEmpty(methodName)) {
+		            throw new ArgumentNullException("methodName");
+		        }
 
-			if (!m_staticMethods.ContainsKey(methodName)) {
-				throw new ArgumentException(string.Format("Type {0} has no such method.", m_type), "methodName");
-			}
+		        if (!m_staticMethods.ContainsKey(methodName)) {
+		            throw new ArgumentException(string.Format("Type {0} has no such method.", m_type), "methodName");
+		        }
 
-			return m_staticMethods[methodName].Invoke(null, parameters);
+		        return m_staticMethods[methodName].Invoke(null, parameters);
+		    }
 		}
 	}
 

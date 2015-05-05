@@ -45,7 +45,7 @@ namespace NTools.WebServiceSupport.Tools {
 
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomainAssemblyResolve;
 
-                var assembly = Assembly.LoadFrom(args[0]);
+                var assembly = Assembly.LoadFile(args[0]);
 
                 s_modelDirectory = Path.GetDirectoryName(assembly.Location);
 
@@ -53,7 +53,7 @@ namespace NTools.WebServiceSupport.Tools {
                 serializerFileName = Path.ChangeExtension(serializerFileName, ".XmlSerializers.dll");
 
                 if (File.Exists(serializerFileName)) {
-                    var serializerAssembly = Assembly.LoadFrom(serializerFileName);
+                    var serializerAssembly = Assembly.LoadFile(serializerFileName);
                 }
 
 
@@ -70,7 +70,7 @@ namespace NTools.WebServiceSupport.Tools {
                             asmPath = Path.ChangeExtension(asmPath, ".dll");
 
                             //Assembly asm = Assembly.LoadFrom(Path.Combine(Path.GetDirectoryName(assembly.Location), "ObjectManagement.dll"));
-                            var asm = Assembly.LoadFrom(asmPath);
+                            var asm = Assembly.LoadFile(asmPath);
                             type = asm.GetType(typeParts[0]);
                         } else {
                             type = Type.GetType(constructorType);
@@ -110,7 +110,7 @@ namespace NTools.WebServiceSupport.Tools {
 			var assemblyPath = Path.ChangeExtension(Path.Combine(s_modelDirectory, parts[0]), ".dll");
 
 			if (File.Exists(assemblyPath)) {
-				assembly = Assembly.LoadFrom(assemblyPath);
+				assembly = Assembly.LoadFile(assemblyPath);
 			}
 			return assembly;
 		}
@@ -121,7 +121,7 @@ namespace NTools.WebServiceSupport.Tools {
 	class Tester {
 
 		private static void Main(string[] args) {
-			var assembly = Assembly.LoadFrom(args[0]);
+			var assembly = Assembly.LoadFile(args[0]);
 			SoapClientTypeSerializer.DeserializeClientTypes(assembly);
 		}
 	}

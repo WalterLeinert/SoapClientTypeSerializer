@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using NTools.Logging.Log4Net;
 
 namespace NTools.Core.Reflection {
 
@@ -8,6 +9,8 @@ namespace NTools.Core.Reflection {
 	/// </summary>
 	[Serializable]
 	public abstract class MemberReflector {
+        private static readonly ITraceLog s_log = TraceLogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+
 		public static BindingFlags AllInstanceDeclared = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
 		public static BindingFlags PrivateInstanceDeclared = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 		public static BindingFlags AllStaticDeclared = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;

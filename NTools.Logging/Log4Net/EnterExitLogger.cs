@@ -7,7 +7,6 @@ using System.Reflection;
 using log4net.Core;
 using log4net.Repository;
 using log4net.Util;
-using NTools.Core;
 //- Zusätzliche Namespaces -----------------------------------------------
 
 namespace NTools.Logging.Log4Net {
