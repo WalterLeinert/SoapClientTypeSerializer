@@ -48,7 +48,12 @@ namespace NTools.Core.Reflection {
 		}
 
 		public object Invoke(object[] parameters) {
-			return Info.Invoke(parameters);
+            if (IsDefaultConstructor) {
+                return Info.Invoke(null);
+            } else {
+                return Info.Invoke(parameters);
+            }
+			
 		}
 	}
 
