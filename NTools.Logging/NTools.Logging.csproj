@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>NTools.Logging</RootNamespace>
     <AssemblyName>NTools.Logging</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -75,12 +75,6 @@
     <Compile Include="LogManager.cs" />
     <Compile Include="MethodLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\NTools.Core\NTools.Core.csproj">
-      <Project>{35B10828-0CE0-4EA7-8CDB-0749DF34E0B0}</Project>
-      <Name>NTools.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
