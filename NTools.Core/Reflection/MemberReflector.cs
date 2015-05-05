@@ -32,7 +32,7 @@ namespace NTools.Core.Reflection {
 			if (type == null) {
 				throw new ArgumentNullException("type");
 			}
-			if (Utility.IsNullOrEmpty(memberName)) {
+			if (String.IsNullOrEmpty(memberName)) {
 				throw new ArgumentNullException("memberName");
 			}
 			#endregion

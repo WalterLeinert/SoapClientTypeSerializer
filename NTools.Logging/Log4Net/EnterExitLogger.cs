@@ -1507,8 +1507,8 @@ namespace NTools.Logging.Log4Net {
 		/// </summary>
 		/// <value>Liefert den Methodennamen</value>
 		private string Method {
-			get { 
-				if (Utility.IsNullOrEmpty(m_method)) {
+			get {
+                if (String.IsNullOrEmpty(m_method)) {
 					return "-unknown-";
 				}
 				return m_method; 

@@ -75,7 +75,7 @@ namespace NTools.Core.Reflection {
 			if (instance == null) {
 				throw new ArgumentNullException("instance");
 			}
-			if (Utility.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(name)) {
 				throw new ArgumentNullException("name");
 			}
 
@@ -87,7 +87,7 @@ namespace NTools.Core.Reflection {
 		}
 
 		public object GetField(string name) {
-			if (Utility.IsNullOrEmpty(name)) {
+            if (String.IsNullOrEmpty(name)) {
 				throw new ArgumentNullException("name");
 			}
 
@@ -102,7 +102,7 @@ namespace NTools.Core.Reflection {
 			if (instance == null) {
 				throw new ArgumentNullException("instance");
 			}
-			if (Utility.IsNullOrEmpty(methodName)) {
+            if (String.IsNullOrEmpty(methodName)) {
 				throw new ArgumentNullException("methodName");
 			}
 
@@ -114,7 +114,7 @@ namespace NTools.Core.Reflection {
 		}
 
 		public object Invoke(string methodName, object[] parameters) {
-			if (Utility.IsNullOrEmpty(methodName)) {
+            if (String.IsNullOrEmpty(methodName)) {
 				throw new ArgumentNullException("methodName");
 			}
 

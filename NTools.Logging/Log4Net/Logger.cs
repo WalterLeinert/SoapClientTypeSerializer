@@ -113,7 +113,7 @@ namespace NTools.Logging.Log4Net {
 		/// <value>Liefert den Methodennamen</value>
 		private string Method {
 			get {
-				if (Utility.IsNullOrEmpty(m_method)) {
+                if (String.IsNullOrEmpty(m_method)) {
 					return "-unknown-";
 				}
 				return m_method;
