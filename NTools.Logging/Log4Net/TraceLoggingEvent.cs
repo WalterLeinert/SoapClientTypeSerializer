@@ -118,7 +118,7 @@ namespace NTools.Logging.Log4Net {
 			var sb = new StringBuilder(EnterExitLogger.EnterExitStrings[(int)eventWrapper.m_enterExit]);
 			sb.Append(eventWrapper.m_methodName);
 			if (elapsedInfo.Length > 0) {
-				sb.Append(sb);
+                sb.Append(elapsedInfo);
 			}
 			loggingEvent.Properties[EnterExitLogger.MethodPropertyName] = sb.ToString();
 			return loggingEvent;
