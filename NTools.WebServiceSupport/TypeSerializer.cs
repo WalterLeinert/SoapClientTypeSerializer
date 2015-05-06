@@ -307,8 +307,8 @@ namespace NTools.WebServiceSupport {
 							var tr = new TypeReflector(typeof(DummyInfoWebService));
 							var mi = typeof(DummyInfoWebService).GetMethod("getString");
 
-							var rtmiCtor = new ConstructorReflector(Type.GetType("System.Reflection.RuntimeMethodInfo"));
-							var rtmi = rtmiCtor.Invoke(null);
+                            //var rtmiCtor = new ConstructorReflector(Type.GetType("System.Reflection.RuntimeMethodInfo"));
+                            //var rtmi = rtmiCtor.Invoke(null);
 
 							var ctorSignature = TypeReflector.BuildMethodSignature(".ctor", new Type[] { Type.GetType("System.Reflection.MethodInfo") });
 							var ctor = GetConstructor(ctorSignature);
