@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTools.WebServiceSupport", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTools.SoapClientTypeSerializer", "NTools.SoapClientTypeSerializer\NTools.SoapClientTypeSerializer.csproj", "{17D4AACA-133C-4E46-AA7F-3B7ACF4E221C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTools.SoapClientTypeTester", "NTools.SoapClientTypeTester\NTools.SoapClientTypeTester.csproj", "{0A84AAF0-49AB-4F52-894D-14F34FF028E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{17D4AACA-133C-4E46-AA7F-3B7ACF4E221C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17D4AACA-133C-4E46-AA7F-3B7ACF4E221C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17D4AACA-133C-4E46-AA7F-3B7ACF4E221C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A84AAF0-49AB-4F52-894D-14F34FF028E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A84AAF0-49AB-4F52-894D-14F34FF028E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A84AAF0-49AB-4F52-894D-14F34FF028E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A84AAF0-49AB-4F52-894D-14F34FF028E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

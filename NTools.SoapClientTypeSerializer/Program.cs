@@ -124,34 +124,4 @@ namespace NTools.WebServiceSupport.Tools {
 		}
 
 	}
-
-
-	class Tester {
-        private static readonly ITraceLog s_log = TraceLogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
-		private static void Main(string[] args) {
-		    using (var log = new EnterExitLogger(s_log, Level.Info)) {
-		        try {
-		            var assembly = Assembly.LoadFile(args[0]);
-
-		            if (args.Length > 1) {
-		                for (var i = 1; i < args.Length; i++) {
-		                    if (Directory.Exists(args[i])) {
-		                        var assemblies = Directory.GetFiles(args[i], "*.dll");
-		                        foreach (var asm in assemblies) {
-		                            Assembly.LoadFile(asm);
-		                        }
-		                    } else {
-		                        Assembly.LoadFile(args[i]);
-		                    }
-
-		                }
-		            }
-		            SoapClientTypeSerializer.DeserializeClientTypes(assembly);
-		        } catch (Exception exc) {
-		            log.Error(exc);
-		        }
-		    }
-		}
-	}
 }
