@@ -73,7 +73,7 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="assembly">Die Assembly mit den WebService-Proxyklassen.</param>
 		public static void SerializeClientTypes(Assembly assembly) {
-            using (var log = new EnterExitLogger(s_log, "assembly = {0}", assembly)) {
+            using (var log = new EnterExitLogger(s_log, Level.Info, "assembly = {0}", assembly)) {
 		        var webServiceTypes = GetWebserviceTypes(assembly);
 
 		        foreach (var webServiceType in webServiceTypes) {
@@ -88,7 +88,7 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="webServiceType">Type of the web service.</param>
 		public static void SerializeClientType(Type webServiceType) {
-		    using (var log = new EnterExitLogger(s_log, "webServiceType = {0}", webServiceType)) {
+		    using (var log = new EnterExitLogger(s_log, Level.Info, "webServiceType = {0}", webServiceType)) {
 		        IFormatter formatter = new BinaryFormatter();
 
 		        using (var stream = new FileStream(GetSerializerPath(webServiceType), FileMode.OpenOrCreate)) {

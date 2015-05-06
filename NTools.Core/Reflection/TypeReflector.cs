@@ -47,7 +47,7 @@ namespace NTools.Core.Reflection {
 
 
 		public static string BuildMethodSignature(MethodBase methodBase) {
-            using (var log = new EnterExitLogger(s_log, Level.Info, "methodBase = {0}", methodBase)) {
+            using (var log = new EnterExitLogger(s_log, "methodBase = {0}", methodBase)) {
 		        var parameterTypes = new TypeList();
 		        foreach (var pi in methodBase.GetParameters()) {
 		            parameterTypes.Add(pi.ParameterType);
@@ -60,7 +60,7 @@ namespace NTools.Core.Reflection {
 
 
 		public static string BuildMethodSignature(string name, Type[] parameterTypes) {
-            using (var log = new EnterExitLogger(s_log, Level.Info, "name = {0}, parameterTypes = {1}", name, parameterTypes)) {
+            using (var log = new EnterExitLogger(s_log, "name = {0}, parameterTypes = {1}", name, parameterTypes)) {
 		        var sb = new StringBuilder(name);
 
 		        sb.Append("(");
