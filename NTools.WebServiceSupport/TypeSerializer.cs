@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
+using System.Security.Cryptography.X509Certificates;
 using System.Web.Services;
 using System.Web.Services.Protocols;
 using log4net.Core;
@@ -25,7 +27,7 @@ namespace NTools.WebServiceSupport {
 	/// Die Serialisierung erfolgt über Reflection.
 	/// </summary>
 	[Serializable]
-	public class TypeSerializer {
+	public class TypeSerializer : ISerializable {
 		#region nicht serialisierte Member
 		[NonSerialized]
 		private static readonly ITraceLog s_log = TraceLogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
@@ -49,6 +51,15 @@ namespace NTools.WebServiceSupport {
 		//[NonSerialized]
 		private readonly ConstructorReflector m_defaultConstructor;
 
+
+        protected TypeSerializer(SerializationInfo si, StreamingContext context) {
+            using (var log = new EnterExitLogger(s_log, "si = {0}", si)) {
+                m_type = (Type)si.GetValue("m_type", typeof(Type));
+                m_fields = (FieldSerializerDict)si.GetValue("m_fields", typeof(FieldSerializerDict));
+                m_constructors = (ConstructorReflectorDict)si.GetValue("m_constructors", typeof(ConstructorReflectorDict));
+                m_defaultConstructor = (ConstructorReflector)si.GetValue("m_defaultConstructor", typeof(ConstructorReflector));
+            }
+        }
 
 		/// <summary>
 		/// Initialisiert eine neue Instanz der class <see cref="TypeSerializer"/> für das 
@@ -248,7 +259,7 @@ namespace NTools.WebServiceSupport {
 			}
 		}
 
-		/// <summary>
+	    /// <summary>
 		/// Deserializes die aktuelle Instanz.
 		/// </summary>
 		/// <returns></returns>
@@ -364,9 +375,30 @@ namespace NTools.WebServiceSupport {
 
 				return instance;
 			}
+
+            
 		}
 
+        [OnDeserializing]
+	    public void OnDeserializing(StreamingContext sc) {
+	        
+	    }
 
+
+        [OnDeserialized]
+        public void OnDeserialized(StreamingContext sc) {
+
+        }
+
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context) {
+            using (var log = new EnterExitLogger(s_log, "type = {0} [assembly: {1}], m_fields = {2}", m_type, m_type.Assembly, m_fields)) {
+                info.AddValue("m_type", m_type);
+                info.AddValue("m_fields", m_fields);
+                info.AddValue("m_constructors", m_constructors);
+                info.AddValue("m_defaultConstructor", m_defaultConstructor);
+            }
+        }
 
 		/// <summary>
 		/// Dummy WebService-Proxy, der keine Methoden enthält und sehr schnell im Konstruktor von 
@@ -377,5 +409,6 @@ namespace NTools.WebServiceSupport {
 		   Namespace = "http://www.themindelectric.com/wsdl/DummyWebServiceType/")]
 		class EmptyWebService : SoapHttpClientProtocol {
 		}
+
 	}
 }
