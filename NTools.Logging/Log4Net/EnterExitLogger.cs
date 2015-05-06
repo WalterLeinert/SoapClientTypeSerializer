@@ -1712,13 +1712,28 @@ namespace NTools.Logging.Log4Net {
 
 		private void BuildStackInfo(int framesToSkip) {
 			if (m_methodBase == null) {
+			    framesToSkip = 0;
 				//
 				// wir holen einen Stacktrace ohne detaillierte Information (nur Methodeninformation)
 				// und ermitteln daraus den Namen der aufrufenden Methode
 				//
 				var st = new StackTrace(framesToSkip, false);
-				m_methodBase = st.GetFrame(0).GetMethod();
-				m_method = m_methodBase.Name;
+
+			    for (var i = 0; i < st.FrameCount; i++) {
+			        var sf = st.GetFrame(i);
+			        if (sf.GetMethod().DeclaringType == GetType() && sf.GetMethod().IsConstructor &&
+			            sf.GetMethod().GetParameters()[0].ParameterType == typeof (ITraceLog)) {
+			            var sft = sf;
+			            if (i < st.FrameCount - 1) {
+			                var sfCaller = st.GetFrame(i + 1);
+			                m_methodBase = sfCaller.GetMethod();
+			                m_method = m_methodBase.Name;
+			                break;
+			            }
+			        }
+			    }
+                //m_methodBase = st.GetFrame(0).GetMethod();
+                //m_method = m_methodBase.Name;
 			}
 		}
 
