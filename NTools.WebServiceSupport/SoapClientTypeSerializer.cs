@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Web.Services;
 using System.Web.Services.Protocols;
+using log4net.Core;
 using NTools.Core.Reflection;
 
 namespace NTools.WebServiceSupport {
@@ -72,11 +73,13 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="assembly">Die Assembly mit den WebService-Proxyklassen.</param>
 		public static void SerializeClientTypes(Assembly assembly) {
-			var webServiceTypes = GetWebserviceTypes(assembly);
+            using (var log = new EnterExitLogger(s_log, "assembly = {0}", assembly)) {
+		        var webServiceTypes = GetWebserviceTypes(assembly);
 
-			foreach (var webServiceType in webServiceTypes) {
-				SerializeClientType(webServiceType);
-			}
+		        foreach (var webServiceType in webServiceTypes) {
+		            SerializeClientType(webServiceType);
+		        }
+		    }
 		}
 
 
@@ -85,29 +88,31 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="webServiceType">Type of the web service.</param>
 		public static void SerializeClientType(Type webServiceType) {
-			IFormatter formatter = new BinaryFormatter();
+		    using (var log = new EnterExitLogger(s_log, "webServiceType = {0}", webServiceType)) {
+		        IFormatter formatter = new BinaryFormatter();
 
-			using (var stream = new FileStream(GetSerializerPath(webServiceType), FileMode.OpenOrCreate)) {
+		        using (var stream = new FileStream(GetSerializerPath(webServiceType), FileMode.OpenOrCreate)) {
 
-				//
-				// WebService-Proxy instantiieren -> SoapClientType wird über Reflection erzeugt
-				//
-				var ce = new ConstructorEventArgs(webServiceType);
-				if (Constructing != null) {
-					Constructing(null, ce);
-				}
-				var ctor = new ConstructorReflector(webServiceType, ce.Types, MemberReflector.AllInstanceDeclared);
-				var webServiceInstance = ctor.Invoke(ce.Args);
+		            //
+		            // WebService-Proxy instantiieren -> SoapClientType wird über Reflection erzeugt
+		            //
+		            var ce = new ConstructorEventArgs(webServiceType);
+		            if (Constructing != null) {
+		                Constructing(null, ce);
+		            }
+		            var ctor = new ConstructorReflector(webServiceType, ce.Types, MemberReflector.AllInstanceDeclared);
+		            var webServiceInstance = ctor.Invoke(ce.Args);
 
-				//
-				// SoapClientType-Field ermitteln und serialisieren
-				//
-				var reflectedClientType = s_clientTypeReflector.GetValue(webServiceInstance);
+		            //
+		            // SoapClientType-Field ermitteln und serialisieren
+		            //
+		            var reflectedClientType = s_clientTypeReflector.GetValue(webServiceInstance);
 
-				var serializer = (TypeSerializer)TypeSerializer.CreateSerializerWrapper(reflectedClientType);
+		            var serializer = (TypeSerializer) TypeSerializer.CreateSerializerWrapper(reflectedClientType);
 
-				TypeSerializer.Serialize(formatter, stream, serializer);
-			}
+		            TypeSerializer.Serialize(formatter, stream, serializer);
+		        }
+		    }
 		}
 
 
@@ -116,11 +121,13 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="assembly">Die Assembly mit den WebService-Proxyklassen.</param>
 		public static void DeserializeClientTypes(Assembly assembly) {
-			var webServiceTypes = GetWebserviceTypes(assembly);
+            using (var log = new EnterExitLogger(s_log, "assembly = {0}", assembly)) {
+		        var webServiceTypes = GetWebserviceTypes(assembly);
 
-			foreach (var webServiceType in webServiceTypes) {
-				DeserializeClientType(webServiceType);
-			}			
+		        foreach (var webServiceType in webServiceTypes) {
+		            DeserializeClientType(webServiceType);
+		        }
+		    }
 		}
 
 
@@ -130,24 +137,29 @@ namespace NTools.WebServiceSupport {
 		/// </summary>
 		/// <param name="webServiceType">Der WebService-Proxytyp.</param>
 		public static void DeserializeClientType(Type webServiceType) {
-			if (!IsCached(webServiceType)) {
-				var filename = GetSerializerPath(webServiceType);
+		    using (var log = new EnterExitLogger(s_log, Level.Info, "webServiceType = {0}", webServiceType)) {
+		        if (!IsCached(webServiceType)) {
+		            var filename = GetSerializerPath(webServiceType);
 
-				if (File.Exists(filename)) {
-					var formatter = new BinaryFormatter();
+		            if (File.Exists(filename)) {
+		                var formatter = new BinaryFormatter();
 
-					var webClientProtocolReflector = new TypeReflector(typeof(WebClientProtocol));
-					var cache = webClientProtocolReflector.GetField("cache");
-					var cacheReflector = new TypeReflector(cache.GetType());
-					//debug: var cacheHashtable = (Hashtable)cacheReflector.GetField(cache, "cache");
+		                var webClientProtocolReflector = new TypeReflector(typeof (WebClientProtocol));
+		                var cache = webClientProtocolReflector.GetField("cache");
+		                var cacheReflector = new TypeReflector(cache.GetType());
+		                //debug: var cacheHashtable = (Hashtable)cacheReflector.GetField(cache, "cache");
 
-					object deserializedClientType = null;
-					using (var stream = new FileStream(filename, FileMode.Open)) {
-						deserializedClientType = TypeSerializer.Deserialize(formatter, stream);
-						webClientProtocolReflector.Invoke("AddToCache(System.Type, System.Object)", new object[] { webServiceType, deserializedClientType });
-					}
-				}
-			}
+		                object deserializedClientType = null;
+		                using (var stream = new FileStream(filename, FileMode.Open)) {
+		                    deserializedClientType = TypeSerializer.Deserialize(formatter, stream);
+		                    webClientProtocolReflector.Invoke("AddToCache(System.Type, System.Object)",
+		                        new object[] {webServiceType, deserializedClientType});
+
+                            log.Log("added to WebClient cache: {0}", deserializedClientType);
+		                }
+		            }
+		        }
+		    }
 		}
 
 
