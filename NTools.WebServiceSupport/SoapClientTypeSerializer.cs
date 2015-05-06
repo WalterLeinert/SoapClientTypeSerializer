@@ -139,7 +139,7 @@ namespace NTools.WebServiceSupport {
 					var webClientProtocolReflector = new TypeReflector(typeof(WebClientProtocol));
 					var cache = webClientProtocolReflector.GetField("cache");
 					var cacheReflector = new TypeReflector(cache.GetType());
-					var cacheHashtable = (Hashtable)cacheReflector.GetField(cache, "cache");
+					//debug: var cacheHashtable = (Hashtable)cacheReflector.GetField(cache, "cache");
 
 					object deserializedClientType = null;
 					using (var stream = new FileStream(filename, FileMode.Open)) {
